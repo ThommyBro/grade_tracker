@@ -9,6 +9,12 @@ class Student:
     email: str
 
 
+    def __str__(self):
+        return (f"Student(Student ID: {self.student_id}, Name: {self.first_name} {self.last_name}, " 
+                f"Email: {self.email})"
+        )
+
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
