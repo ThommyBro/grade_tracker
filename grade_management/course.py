@@ -4,6 +4,5 @@ from dataclasses import dataclass, field
 class Course:
         course_id: str
         name: str
-        max_grade: float = 0.0
-        passing_grade: float = 0.0
-        
+        max_grade: float = 100.0
+        passing_grade: float = 50.0
