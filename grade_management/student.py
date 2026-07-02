@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import re
 
 
 @dataclass
@@ -11,8 +12,10 @@ class Student:
     def __post_init__(self):
         if self.first_name is "" or self.last_name is "":
             raise ValueError(f"First and Lastname must not be empty!")
-        elif not "@" in self.email:
-            raise ValueError(f"Emailaddress must contain '@' symbol!")  
+        elif not re.search(r"^\w+@\w+\.\w{2,3}$", self.email):
+            # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
+            raise ValueError(f"Stundents must have a valid emailaddress! "
+                             f"({self.email})")  
 
 
     def __str__(self):
