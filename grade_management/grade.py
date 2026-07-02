@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from student import Student 
 from course import Course
 
@@ -11,6 +11,12 @@ class Grade():
     notes: str = ""
     
 
+    def __post_init__(self):      
+        if not 0 <= self.score <= self.course.max_grade:
+            raise ValueError(f"Score {self.score} out of range "                
+                             f"[0, {self.course.max_grade}]"           
+                             )
+        
 
     @property
     def is_passing(self) -> bool:
@@ -44,7 +50,13 @@ class Grade():
 
 @dataclass
 class GradeBook:
-    pass
+    
+    def add_student(self):
+        pass
+
+
+    def add_course(self):
+        pass
 
 
 
@@ -52,8 +64,12 @@ class GradeBook:
 
 
 def main():
-    g = Grade(Student("001","Thomas", "Brockt","sdf"), Course("101", "QM1"), 75, "01.07.2026", "some note")
+    s = Student("001","Thomas", "Brockt","sdf")
+    c = Course("101", "QM1")
+    g = Grade(s,c, 100, "01.07.2026", "some note")
     print(g.letter_grade)
+    print(g.is_passing)
+    
     
 
 
