@@ -52,6 +52,9 @@ class Grade():
 class GradeBook:
     students: list = field(default_factory=list)
     courses: list = field(default_factory=list)
+    grades: list = field(default_factory=list)
+
+    
 
 
     def add_student(self, student: Student):
@@ -59,10 +62,7 @@ class GradeBook:
         Creates set of existing student ids.
         Checks new student against this set. Appends student list if id is not exiting.
         """
-        stud_ids = set()
-        for old_student in self.students:
-            stud_ids.add(old_student.student_id)
-        if not student.student_id in stud_ids:
+        if not student in self.students:
             self.students.append(student)
         else:
             raise ValueError(f"Student {student.full_name} already exists.")
@@ -73,13 +73,19 @@ class GradeBook:
         Creates set of existing course ids.
         Checks new course against this set. Appends courses list if id is not exiting.
         """
-        course_ids = set()
-        for old_course in self.courses:
-            course_ids.add(old_course.course_id)
-        if not course.course_id in self.courses:
+        if not course in self.courses:
             self.courses.append(course)
         else:
             raise ValueError(f"Course {course.name} already exists.")
+        
+
+    def record_grade(self, student: Student, course: Course, score=0, date="", note=""):
+        grade = Grade(student, course, score, date, note)
+        # use __eq__ of student and course!
+        if student in self.students and course in self.courses:
+            pass
+        else:
+            raise ValueError(f"Check if student and course exists.")
 
 
 
@@ -92,6 +98,7 @@ def main():
     g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
     s2 = Student("002","a", "b","ab@sample.com")
     s3 = Student("003", "g","z","abc@cba.bac")
+    c2 = Course("101", "Python classics")
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
     #print(s1)
@@ -101,6 +108,7 @@ def main():
     gbook.add_course(c1)
     #print(gbook)
     gbook.add_student(s3)
+    gbook.add_course(c2)
     print(gbook)
     
     
