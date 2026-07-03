@@ -47,12 +47,13 @@ class Grade():
 
 
 
-
+##################### GRADEBOOK #####################
 @dataclass
 class GradeBook:
     students: list = field(default_factory=list)
     courses: list = field(default_factory=list)
     grades: list = field(default_factory=list)
+    course_grades: dict = field(default_factory=dict)
 
     
 
@@ -93,7 +94,18 @@ class GradeBook:
         Returns  dict of course names with corresponding grades (percentages and letters).
         """
         return {grade.course.name: [grade.percentage, grade.letter_grade] for grade in self.grades if grade.student == student}
-      
+    
+
+    def get_course_grades(self, course: Course):
+        """
+        Updates course_grades dict with corresponding course and returns a sorted dict with:
+        keys = letter_grades
+        values = list of students + percentages
+        """
+        for grade in self.grades:
+            if grade.course == course:
+                self.course_grades.setdefault(grade.letter_grade, []).append(grade.student.full_name + " " + '('+(str(grade.percentage))+' %)')
+        return {k: v for k, v in sorted(self.course_grades.items(), key=lambda item: item[0])}
 
 
 
@@ -121,10 +133,13 @@ def main():
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
     gbook.record_grade(s1,c2,100,"10.06.2026")
+    gbook.record_grade(s3,c2,95)
     #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
     #print(gbook.grades)
+    #print(gbook.courses)
     print(gbook.get_student_grades(s1))
+    #print(gbook.get_course_grades(c1))
 
     
     
