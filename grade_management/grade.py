@@ -108,58 +108,58 @@ class GradeBook:
         return {k: v for k, v in sorted(self.course_grades.items(), key=lambda item: item[0])}
 
 
-    def student_average(self, student: Student):
-        if not student in self.students:
-            raise ValueError(f"student doesn't exist.")
+    def student_average(self, studentID: str):
+        """
+        Checks if student exists.
+        returns float [0.0, 1.0]
+        """
+        total = 0
+        count = 0
+        for grade in self.grades:
+            if studentID == grade.student.student_id:
+                total += grade.percentage
+                count += 1
+        if count == 0:
+            print(f"Student {studentID} has no courses finished.")
         else:
-            total = 0
-            count = 0
-            for grade in self.grades:
-                if student == grade.student:
-                    total += grade.percentage
-                    count += 1
-            if count == 0:
-                print(f"{student.full_name} has no courses finished.")
-            else:
-                return round(total/count,1)
+            return round(total/count,1)
             
 
-    def course_average(self, course: Course):
+    def course_average(self, courseID: str):
         """
         Checks if course exists.
         returns float [0.0, 100.0]
         """
-        if not course in self.courses:
-            raise ValueError(f"Course doesn't exist.")
+        total = 0
+        count = 0
+        for grade in self.grades:
+            if courseID == grade.course.course_id:
+                total += grade.percentage
+                count += 1
+        if count == 0:
+            return f"Course {courseID} has no participants."
         else:
-            total = 0
-            count = 0
-            for grade in self.grades:
-                if course == grade.course:
-                    total += grade.percentage
-                    count += 1
-            if count == 0:
-                print(f"{course.name} has no participants.")
-            else:
-                return round(total/count,1)
+            return round(total/count,1)
             
 
-    def course_pass_rate(self, course: Course):
+    def course_pass_rate(self, courseID: str):
         """
         Checks if course exists.
         returns float [0.0, 1.0]
         """
-        if not course in self.courses:
-            raise ValueError(f"Course doesn't exist.")
+        all_participants = 0
+        all_passers = 0
+        
+        for grade in self.grades:
+            if courseID == grade.course.course_id:
+                all_participants += 1
+                if grade.is_passing:
+                    all_passers += 1
+        if all_participants == 0:
+            return f"Course does not exist."
         else:
-            all_participants = 0
-            all_passers = 0
-            for grade in self.grades:
-                if course == grade.course:
-                    all_participants += 1
-                    if grade.is_passing:
-                        all_passers += 1
             return round(all_passers/all_participants,1)
+        
 
 
 
@@ -200,9 +200,9 @@ def main():
     #print(gbook.courses)
     #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
-    #print(gbook.student_average(s1))
-    #print(gbook.course_average(c1))
-    print(gbook.course_pass_rate(c2))
+    print(gbook.student_average("001"))
+    #print(gbook.course_average("101"))
+    #print(gbook.course_pass_rate("107"))
     
     
 
