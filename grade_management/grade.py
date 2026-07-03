@@ -125,6 +125,10 @@ class GradeBook:
             
 
     def course_average(self, course: Course):
+        """
+        Checks if course exists.
+        returns float [0.0, 100.0]
+        """
         if not course in self.courses:
             raise ValueError(f"Course doesn't exist.")
         else:
@@ -138,6 +142,26 @@ class GradeBook:
                 print(f"{course.name} has no participants.")
             else:
                 return round(total/count,1)
+            
+
+    def course_pass_rate(self, course: Course):
+        """
+        Checks if course exists.
+        returns float [0.0, 1.0]
+        """
+        if not course in self.courses:
+            raise ValueError(f"Course doesn't exist.")
+        else:
+            all_participants = 0
+            all_passers = 0
+            for grade in self.grades:
+                if course == grade.course:
+                    all_participants += 1
+                    if grade.is_passing:
+                        all_passers += 1
+            return round(all_passers/all_participants,1)
+
+
 
 
 
@@ -152,6 +176,7 @@ def main():
     s2 = Student("002","a", "b","ab@sample.com")
     s3 = Student("003", "g","z","abc@cba.bac")
     s4 = Student("004","Anna", "Alpha", "anna@home.de")
+    s5 = Student("005", "Benno", "Beta", "benno@home.com")
     c2 = Course("102", "Python classics")
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
@@ -162,11 +187,13 @@ def main():
     gbook.add_course(c1)
     gbook.add_student(s3)
     gbook.add_student(s4)
+    gbook.add_student(s5)
     gbook.add_course(c2)
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
     gbook.record_grade(s1,c2,100,"10.06.2026")
     gbook.record_grade(s3,c2,95)
+    gbook.record_grade(s5,c1,30,"03.07.2026")
     #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
     #print(gbook.grades)
@@ -174,7 +201,8 @@ def main():
     #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
     #print(gbook.student_average(s1))
-    print(gbook.course_average(c2))
+    #print(gbook.course_average(c1))
+    print(gbook.course_pass_rate(c2))
     
     
 
