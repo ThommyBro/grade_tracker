@@ -122,6 +122,22 @@ class GradeBook:
                 print(f"{student.full_name} has no courses finished.")
             else:
                 return round(total/count,1)
+            
+
+    def course_average(self, course: Course):
+        if not course in self.courses:
+            raise ValueError(f"Course doesn't exist.")
+        else:
+            total = 0
+            count = 0
+            for grade in self.grades:
+                if course == grade.course:
+                    total += grade.percentage
+                    count += 1
+            if count == 0:
+                print(f"{course.name} has no participants.")
+            else:
+                return round(total/count,1)
 
 
 
@@ -157,8 +173,8 @@ def main():
     #print(gbook.courses)
     #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
-    print(gbook.student_average(s4))
-
+    #print(gbook.student_average(s1))
+    print(gbook.course_average(c2))
     
     
 
