@@ -86,6 +86,16 @@ class GradeBook:
             self.grades.append(grade)
         else:
             raise ValueError(f"Check if student and course exists.")
+        
+
+    def get_student_grades(self, student: Student):
+        """
+        Returns  dict of course names with corresponding grades (percentages and letters).
+        """
+        return {grade.course.name: [grade.percentage, grade.letter_grade] for grade in self.grades if grade.student == student}
+      
+
+
 
 
 
@@ -110,9 +120,12 @@ def main():
     gbook.add_course(c2)
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
+    gbook.record_grade(s1,c2,100,"10.06.2026")
     #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
-    print(gbook.grades)
+    #print(gbook.grades)
+    print(gbook.get_student_grades(s1))
+
     
     
 
