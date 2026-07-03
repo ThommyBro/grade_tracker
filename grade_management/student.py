@@ -10,7 +10,7 @@ class Student:
     email: str
 
     def __post_init__(self):
-        if self.first_name is "" or self.last_name is "":
+        if self.first_name is "" or self.last_name is "":  # Firstname and Lastname must not be empty
             raise ValueError(f"First and Lastname must not be empty!")
         elif not re.search(r"^\w+@\w+\.\w{2,3}$", self.email):
             # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
@@ -19,17 +19,17 @@ class Student:
 
 
     def __str__(self):
+        """Just a pretty Student object."""
         return (f"Student(Student ID: {self.student_id}, Name: {self.first_name} {self.last_name}, " 
                 f"Email: {self.email})"
         )
 
 
     def __eq__(self, other):
+        """Compare Students by ID."""
         if not isinstance(other, Student):
             return NotImplemented
         return self.student_id == other.student_id
-
-
 
 
     @property
