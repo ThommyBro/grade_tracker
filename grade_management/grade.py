@@ -171,15 +171,11 @@ class GradeBook:
                 else f"Course does not exist."
                 )
 
-        
+    
 
-    def top_students(self, n: int):
-        """
-        Top n students by overall average.
-        """
-        if n > len(self.students):
-            raise ValueError(f"We don't have {n} students.")
-        
+    # helper function for all stundent averages
+
+    def all_student_averages(self):
         for grade in self.grades:
             stud_avg = self.student_average(grade.student.student_id)
             stud_name = grade.student.full_name
@@ -193,9 +189,28 @@ class GradeBook:
         all_stud_avgs = tuple({k: v for k, v in sorted(self.top_students_all.items(), 
                                                        key=lambda item: item[1], 
                                                        reverse=True)}.items()
-                             )
+                            )
+        return all_stud_avgs
+                                                    
+
+    def top_students(self, n: int):
+        """
+        Top n students by overall average.
+        """
+        if n > len(self.students):
+            raise ValueError(f"We don't have {n} students.")
+        
+        # call helper function
         # take top n students by slicing
-        return all_stud_avgs[0:n]
+        return self.all_student_averages()[0:n]
+    
+
+    def students_at_risk(self, threshold: int):
+        """"
+        Students with average below threshold (percentage).
+        Uses helper function all_student_averages.
+        """
+        return [student for student in self.all_student_averages() if student[1] <= threshold ]
         
 
 
@@ -244,7 +259,8 @@ def main():
     #print(gbook.course_average("101"))
     #print(gbook.course_pass_rate("101"))
     #print(gbook.top_students(3))
-    print(gbook.top_students(3))
+    #print(gbook.top_students(4))
+    print(gbook.students_at_risk(30))
     
     
 
