@@ -48,12 +48,15 @@ class Grade():
 
 
 ##################### GRADEBOOK #####################
+
 @dataclass
 class GradeBook:
     students: list = field(default_factory=list)
     courses: list = field(default_factory=list)
     grades: list = field(default_factory=list)
     course_grades: dict = field(default_factory=dict)
+    top_students_all: dict = field(default_factory=dict)
+    top_n_students: tuple = field(default_factory=tuple)
 
     
 
@@ -81,6 +84,11 @@ class GradeBook:
         
 
     def record_grade(self, student: Student, course: Course, score=0, date="", note=""):
+        """
+        Creates Grade Object.
+        Checks if stundent and course exists.
+        If so, appends list of grades with new Grade obejct. 
+        """
         grade = Grade(student, course, score, date, note)
         # use __eq__ of student and course!
         if student in self.students and course in self.courses:
@@ -93,7 +101,7 @@ class GradeBook:
         """
         Returns  dict of course names with corresponding grades (percentages and letters).
         """
-        return {grade.course.name: [grade.percentage, grade.letter_grade] for grade in self.grades if grade.student == student}
+        return {grade.course.name: (grade.percentage, grade.letter_grade) for grade in self.grades if grade.student == student}
     
 
     def get_course_grades(self, course: Course):
@@ -111,7 +119,8 @@ class GradeBook:
     def student_average(self, studentID: str):
         """
         Checks if student exists.
-        returns float [0.0, 1.0]
+        Average percentage across all courses.
+        returns float in intervall [0.0, 1.0]
         """
         total = 0
         count = 0
@@ -119,16 +128,18 @@ class GradeBook:
             if studentID == grade.student.student_id:
                 total += grade.percentage
                 count += 1
-        if count == 0:
-            print(f"Student {studentID} has no courses finished.")
-        else:
-            return round(total/count,1)
+        return (
+                round(total/count,1) if count > 0
+                else f"Student {studentID} has no courses finished."
+                )
+
             
 
     def course_average(self, courseID: str):
         """
         Checks if course exists.
-        returns float [0.0, 100.0]
+        Average score for a course.
+        returns float in intervall  [0.0, 100.0]
         """
         total = 0
         count = 0
@@ -136,29 +147,51 @@ class GradeBook:
             if courseID == grade.course.course_id:
                 total += grade.percentage
                 count += 1
-        if count == 0:
-            return f"Course {courseID} has no participants."
-        else:
-            return round(total/count,1)
+        return (
+                round(total/count,1) if count > 0
+                else f"Course {courseID} has no participants."
+                )
+   
             
 
     def course_pass_rate(self, courseID: str):
         """
         Checks if course exists.
-        returns float [0.0, 1.0]
+        Percentages of passing grades.
+        returns float in intervall [0.0, 1.0]
         """
-        all_participants = 0
-        all_passers = 0
+        all_participants, all_passers = 0, 0
         
         for grade in self.grades:
             if courseID == grade.course.course_id:
                 all_participants += 1
-                if grade.is_passing:
-                    all_passers += 1
-        if all_participants == 0:
-            return f"Course does not exist."
-        else:
-            return round(all_passers/all_participants,1)
+                if grade.is_passing: all_passers += 1
+        return (
+                round(all_passers/all_participants,1) if all_participants > 0 
+                else f"Course does not exist."
+                )
+
+        
+
+    def top_students(self, n: int):
+        """
+        Top n students by overall average.
+        """
+        for grade in self.grades:
+            stud_avg = self.student_average(grade.student.student_id)
+            stud_name = grade.student.full_name
+
+            # create dict with student names as keys and their overall averages as values
+            self.top_students_all.setdefault(stud_name, stud_avg)
+
+        # temp dict with all students and average grades
+        all_stud_avgs = tuple({k: v for k, v in sorted(self.top_students_all.items(), 
+                                                       key=lambda item: item[1], 
+                                                       reverse=True)}.items()
+                             )
+
+        # take top n in final dict
+        return all_stud_avgs[0:n]
         
 
 
@@ -178,6 +211,7 @@ def main():
     s4 = Student("004","Anna", "Alpha", "anna@home.de")
     s5 = Student("005", "Benno", "Beta", "benno@home.com")
     c2 = Course("102", "Python classics")
+    c3 = Course("103","Higher Category Theory", 100.0, 75)
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
     #print(s1)
@@ -189,20 +223,24 @@ def main():
     gbook.add_student(s4)
     gbook.add_student(s5)
     gbook.add_course(c2)
+    gbook.add_course(c3)
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
     gbook.record_grade(s1,c2,100,"10.06.2026")
     gbook.record_grade(s3,c2,95)
     gbook.record_grade(s5,c1,30,"03.07.2026")
+    gbook.record_grade(s4,c3,25,"03.07.2026")
     #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
     #print(gbook.grades)
     #print(gbook.courses)
     #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
-    print(gbook.student_average("001"))
+    #print(gbook.student_average("001"))
     #print(gbook.course_average("101"))
-    #print(gbook.course_pass_rate("107"))
+    #print(gbook.course_pass_rate("101"))
+    #print(gbook.top_students(3))
+    print(gbook.top_students(3))
     
     
 
