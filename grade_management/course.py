@@ -7,6 +7,14 @@ class Course:
         max_grade: float = 100.0
         passing_grade: float = 50.0
 
+
+        def __post_init__(self):
+            if not 0 < self.max_grade <=100.0:
+                raise ValueError(f"Check your max grade!")
+            if not 0 < self.passing_grade <= self.max_grade:
+                 raise ValueError(f"Check your passing grade!")
+              
+
         def __eq__(self, other):
             """Compare Courses by ID."""
             if not isinstance(other, Course):
