@@ -83,7 +83,7 @@ class GradeBook:
         grade = Grade(student, course, score, date, note)
         # use __eq__ of student and course!
         if student in self.students and course in self.courses:
-            pass
+            self.grades.append(grade)
         else:
             raise ValueError(f"Check if student and course exists.")
 
@@ -98,7 +98,7 @@ def main():
     g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
     s2 = Student("002","a", "b","ab@sample.com")
     s3 = Student("003", "g","z","abc@cba.bac")
-    c2 = Course("101", "Python classics")
+    c2 = Course("102", "Python classics")
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
     #print(s1)
@@ -106,10 +106,13 @@ def main():
     gbook.add_student(s1)
     gbook.add_student(s2)
     gbook.add_course(c1)
-    #print(gbook)
     gbook.add_student(s3)
     gbook.add_course(c2)
-    print(gbook)
+    gbook.record_grade(s1,c1,99,"03.07.2026")
+    gbook.record_grade(s2,c2,50,"03.07.2026")
+    #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
+    #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
+    print(gbook.grades)
     
     
 
