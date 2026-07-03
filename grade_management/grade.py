@@ -108,18 +108,34 @@ class GradeBook:
         return {k: v for k, v in sorted(self.course_grades.items(), key=lambda item: item[0])}
 
 
+    def student_average(self, student: Student):
+        if not student in self.students:
+            raise ValueError(f"student doesn't exist.")
+        else:
+            total = 0
+            count = 0
+            for grade in self.grades:
+                if student == grade.student:
+                    total += grade.percentage
+                    count += 1
+            if count == 0:
+                print(f"{student.full_name} has no courses finished.")
+            else:
+                return round(total/count,1)
 
 
 
 
 
 
+######################## MAIN() ########################
 def main():
     s1 = Student("001","t", "b","some@mit.com")
     c1 = Course("101", "QM1")
     g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
     s2 = Student("002","a", "b","ab@sample.com")
     s3 = Student("003", "g","z","abc@cba.bac")
+    s4 = Student("004","Anna", "Alpha", "anna@home.de")
     c2 = Course("102", "Python classics")
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
@@ -129,6 +145,7 @@ def main():
     gbook.add_student(s2)
     gbook.add_course(c1)
     gbook.add_student(s3)
+    gbook.add_student(s4)
     gbook.add_course(c2)
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
@@ -138,8 +155,9 @@ def main():
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
     #print(gbook.grades)
     #print(gbook.courses)
-    print(gbook.get_student_grades(s1))
+    #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
+    print(gbook.student_average(s4))
 
     
     
