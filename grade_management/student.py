@@ -24,6 +24,14 @@ class Student:
         )
 
 
+    def __eq__(self, other):
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self.student_id == other.student_id
+
+
+
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
