@@ -177,6 +177,9 @@ class GradeBook:
         """
         Top n students by overall average.
         """
+        if n > len(self.students):
+            raise ValueError(f"We don't have {n} students.")
+        
         for grade in self.grades:
             stud_avg = self.student_average(grade.student.student_id)
             stud_name = grade.student.full_name
@@ -185,12 +188,13 @@ class GradeBook:
             self.top_students_all.setdefault(stud_name, stud_avg)
 
         # temp dict with all students and average grades
+        # sort by value = average percentage then reverse to get high to low ordering
+        # make a tuple
         all_stud_avgs = tuple({k: v for k, v in sorted(self.top_students_all.items(), 
                                                        key=lambda item: item[1], 
                                                        reverse=True)}.items()
                              )
-
-        # take top n in final dict
+        # take top n students by slicing
         return all_stud_avgs[0:n]
         
 
