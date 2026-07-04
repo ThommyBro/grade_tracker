@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
+import re
 from student import Student 
 from course import Course
+
+
 
 @dataclass
 class Grade():
@@ -60,6 +63,7 @@ class GradeBook:
 
     
 
+    #----------- Basic Methods -----------#
 
     def add_student(self, student: Student):
         """
@@ -115,6 +119,8 @@ class GradeBook:
                 self.course_grades.setdefault(grade.letter_grade, []).append(grade.student.full_name + " " + '('+(str(grade.percentage))+' %)')
         return {k: v for k, v in sorted(self.course_grades.items(), key=lambda item: item[0])}
 
+
+    #----------- Statistical Methods -----------#
 
     def student_average(self, studentID: str):
         """
@@ -211,6 +217,26 @@ class GradeBook:
         Uses helper function all_student_averages.
         """
         return [student for student in self.all_student_averages() if student[1] <= threshold ]
+    
+
+    #----------- Search Methods -----------#
+
+    def search_Students(self, query: str):
+        """
+        Search Students by Name or Mail
+        """
+        student = query.lower()
+        for studi in self.students:  
+            if student == studi.first_name.lower():
+                return studi
+
+
+
+    def search_courses(self, query: str):
+        """
+        Search Courses by Name
+        """
+        pass
         
 
 
@@ -222,13 +248,14 @@ class GradeBook:
 
 ######################## MAIN() ########################
 def main():
-    s1 = Student("001","t", "b","some@mit.com")
+    s1 = Student("t", "b","some@mit.com")
     c1 = Course("101", "QM1")
     g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
-    s2 = Student("002","a", "b","ab@sample.com")
-    s3 = Student("003", "g","z","abc@cba.bac")
-    s4 = Student("004","Anna", "Alpha", "anna@home.de")
-    s5 = Student("005", "Benno", "Beta", "benno@home.com")
+    s2 = Student("a", "b","ab@sample.com")
+    s3 = Student("g","z","abc@cba.bac")
+    s4 = Student("Anna", "Alpha", "anna@home.de")
+    s5 = Student("Benno", "Beta", "benno@home.com")
+    #s6 = Student("123",True,"123@test.com")
     c2 = Course("102", "Python classics")
     c3 = Course("103","Higher Category Theory", 100.0, 75)
     #print(f"Letter-Grade: {g1.letter_grade}")
@@ -260,7 +287,8 @@ def main():
     #print(gbook.course_pass_rate("101"))
     #print(gbook.top_students(3))
     #print(gbook.top_students(4))
-    print(gbook.students_at_risk(30))
+    #print(gbook.students_at_risk(50))
+    print(gbook.search_Students("anna"))
     
     
 
