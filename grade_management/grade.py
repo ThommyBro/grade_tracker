@@ -221,14 +221,32 @@ class GradeBook:
 
     #----------- Search Methods -----------#
 
-    def search_Students(self, query: str):
+    def search_students(self, query: str):
         """
-        Search Students by Name or Mail
+        Search Students by Name or Mail.
+        Regex search if mailaddress is given, if so string is generated and compared with known student mail addresses.
+        If regex is None, full name search is performed.
         """
-        student = query.lower()
-        for studi in self.students:  
-            if student == studi.first_name.lower():
-                return studi
+        # (...) optional if one skips top level domain part
+        regex = r"^\w+@\w+(\.\w+)*$"
+        mail_match = re.search(regex, query.strip())
+  
+        if mail_match:
+            # extract string from mail_match
+            mail =  mail_match.group().lower()
+            for studi in self.students: 
+                if mail.lower() in studi.email.lower():
+                    return studi
+            return f"No match found with mailaddress '{query}'."
+        else:
+            for studi in self.students: 
+                if query.lower() == studi.full_name.lower():
+                    return studi
+            return f"No match with Name '{query}' found."
+
+ 
+
+  
 
 
 
@@ -288,7 +306,7 @@ def main():
     #print(gbook.top_students(3))
     #print(gbook.top_students(4))
     #print(gbook.students_at_risk(50))
-    print(gbook.search_Students("anna"))
+    print(gbook.search_students("benno@home.com"))
     
     
 

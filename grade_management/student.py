@@ -29,6 +29,7 @@ class Student:
         elif not re.search(r"^\w+@\w+\.\w{2,3}$", self.email):
             raise ValueError(f"Stundents must have a valid emailaddress! "
                              f"({self.email})")  
+        
 
 
     def __str__(self):
@@ -63,5 +64,5 @@ class Student:
 
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
