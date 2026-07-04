@@ -1,10 +1,20 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import re
+import random
 
+
+
+def id_generator():
+    i = ""
+    id = ""
+    for _ in range(5):
+        i = str(random.randint(0,9))
+        id += i
+    return id
 
 @dataclass
 class Student:
-    student_id: str
+    student_id: str = field(default_factory=id_generator, kw_only=True) # key-word only, stud_id can be first attribute despite standard value
     first_name: str
     last_name: str
     email: str
@@ -45,9 +55,9 @@ class Student:
 
 
 
-def main():
-    student = Student("0001", "Thomas", "Brockt", "thomas@home.edu")
-    print(student)
+# def main():
+#     student = Student("0001", "Thomas", "Brockt", "thomas@home.edu")
+#     print(student)
     
 
 
