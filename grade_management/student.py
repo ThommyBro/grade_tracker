@@ -12,8 +12,11 @@ class Student:
     def __post_init__(self):
         if self.first_name is "" or self.last_name is "":  # Firstname and Lastname must not be empty
             raise ValueError(f"First and Lastname must not be empty!")
+        # First- and Lastname must be string
+        elif not (type(self.first_name) == str and type(self.last_name) == str):
+            raise ValueError(f"Names must be strings!")
+        # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
         elif not re.search(r"^\w+@\w+\.\w{2,3}$", self.email):
-            # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
             raise ValueError(f"Stundents must have a valid emailaddress! "
                              f"({self.email})")  
 
