@@ -232,7 +232,7 @@ class GradeBook:
         mail_match = re.search(regex, query.strip())
   
         if mail_match:
-            # extract string from mail_match
+            # extract string from mail_match with group()
             mail =  mail_match.group().lower()
             for studi in self.students: 
                 if mail.lower() in studi.email.lower():
@@ -243,19 +243,27 @@ class GradeBook:
                 if query.lower() == studi.full_name.lower():
                     return studi
             return f"No match with Name '{query}' found."
+        
 
+    def search_course(self, query: str):
+        """
+        Search Course by name.
+        Regex is maximal flexible.
+        List of possible matching courses is returned.
+        """    
+        regex = r"^\w+$"
+        course_match = re.search(regex, query.strip())
+        possible_courses = []
+
+        if course_match:
+            course = course_match.group().lower()
+            for subject in self.courses:
+                if course in subject.name.lower():
+                    possible_courses.append(subject)
+            return possible_courses
+        return f"No course '{query}' found." 
  
 
-  
-
-
-
-    def search_courses(self, query: str):
-        """
-        Search Courses by Name
-        """
-        pass
-        
 
 
 
@@ -276,6 +284,7 @@ def main():
     #s6 = Student("123",True,"123@test.com")
     c2 = Course("102", "Python classics")
     c3 = Course("103","Higher Category Theory", 100.0, 75)
+    c4  = Course("104", "QM2", 100, 50)
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
     #print(s1)
@@ -288,6 +297,7 @@ def main():
     gbook.add_student(s5)
     gbook.add_course(c2)
     gbook.add_course(c3)
+    gbook.add_course(c4)
     gbook.record_grade(s1,c1,99,"03.07.2026")
     gbook.record_grade(s2,c2,50,"03.07.2026")
     gbook.record_grade(s1,c2,100,"10.06.2026")
@@ -306,7 +316,8 @@ def main():
     #print(gbook.top_students(3))
     #print(gbook.top_students(4))
     #print(gbook.students_at_risk(50))
-    print(gbook.search_students("benno@home.com"))
+    #print(gbook.search_students("benno@home.com"))
+    print(gbook.search_course("higher"))
     
     
 
