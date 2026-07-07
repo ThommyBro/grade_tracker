@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-import re
 import random
 
 
@@ -20,13 +19,13 @@ class Student:
     email: str
 
     def __post_init__(self):
-        if self.first_name is "" or self.last_name is "":  # Firstname and Lastname must not be empty
+        if not self.first_name  or not self.last_name:  # Firstname and Lastname must not be empty
             raise ValueError(f"First and Lastname must not be empty!")
         # First- and Lastname must be string
         elif not (type(self.first_name) == str and type(self.last_name) == str):
             raise ValueError(f"Names must be strings!")
         # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
-        elif not re.search(r"^\w+@\w+\.\w{2,3}$", self.email):
+        elif "@" not in self.email:
             raise ValueError(f"Stundents must have a valid emailaddress! "
                              f"({self.email})")  
         
@@ -37,6 +36,9 @@ class Student:
         return (f"Student(Student ID: {self.student_id}, Name: {self.first_name} {self.last_name}, " 
                 f"Email: {self.email})"
         )
+    
+    def __repr__(self):
+        return f"{self.student_id}, {self.first_name}, {self.last_name}, {self.email} "
 
 
     def __eq__(self, other):
