@@ -1,0 +1,104 @@
+{
+    "students": [
+        {
+            "student_id": "50589",
+            "first_name": "t",
+            "last_name": "b",
+            "email": "some.student@mit.com"
+        },
+        {
+            "student_id": "45095",
+            "first_name": "a",
+            "last_name": "b",
+            "email": "ab@sample.com"
+        },
+        {
+            "student_id": "72478",
+            "first_name": "g",
+            "last_name": "z",
+            "email": "abc@cba.bac"
+        },
+        {
+            "student_id": "16729",
+            "first_name": "Anna",
+            "last_name": "Alpha",
+            "email": "anna@home.de"
+        },
+        {
+            "student_id": "56166",
+            "first_name": "Benno",
+            "last_name": "Beta",
+            "email": "benno@home.com"
+        }
+    ],
+    "courses": [
+        {
+            "course_id": "101",
+            "name": "QM1",
+            "max_grade": 100.0,
+            "passing_grade": 50.0
+        },
+        {
+            "course_id": "102",
+            "name": "Python classics",
+            "max_grade": 100.0,
+            "passing_grade": 50.0
+        },
+        {
+            "course_id": "103",
+            "name": "Higher Category Theory",
+            "max_grade": 100.0,
+            "passing_grade": 75
+        },
+        {
+            "course_id": "104",
+            "name": "QM2",
+            "max_grade": 100,
+            "passing_grade": 50
+        }
+    ],
+    "grade": [
+        {
+            "student_id": "50589",
+            "course_id": "101",
+            "score": 99,
+            "date": "03.07.2026",
+            "notes": ""
+        },
+        {
+            "student_id": "45095",
+            "course_id": "102",
+            "score": 50,
+            "date": "03.07.2026",
+            "notes": ""
+        },
+        {
+            "student_id": "50589",
+            "course_id": "102",
+            "score": 100,
+            "date": "10.06.2026",
+            "notes": ""
+        },
+        {
+            "student_id": "72478",
+            "course_id": "102",
+            "score": 95,
+            "date": "",
+            "notes": ""
+        },
+        {
+            "student_id": "56166",
+            "course_id": "101",
+            "score": 30,
+            "date": "03.07.2026",
+            "notes": ""
+        },
+        {
+            "student_id": "16729",
+            "course_id": "103",
+            "score": 25,
+            "date": "03.07.2026",
+            "notes": ""
+        }
+    ]
+}

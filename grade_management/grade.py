@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import re
 import json
+import csv
 from student import Student 
 from course import Course
 
@@ -381,48 +382,75 @@ class GradeBook:
         
         # return complete gradebook
         return gbook
+    
+
+    # ------- CSV Stuff --------#
+    def read_csv_grade(self):
+        with open('grades.csv', 'r', newline='', encoding="utf-8") as csvfile:
+            grade_reader = csv.reader(csvfile)
+        
+        # Reading the header
+            header = next(grade_reader )
+            print('Header:', header)
+
+        # Reading each row of the CSV
+            for row in grade_reader:
+                print('Row:', row)
+
+
 
 
 
 
 ######################## MAIN() ########################
 def main():
-    s1 = Student("t", "b","some.student@mit.com")
+    #- create gradebook
+    gbook = GradeBook()
+
+    #- create students
+    s1 = Student("12345","t", "b","some.student@mit.com")
+    s2 = Student("23456","a", "b","ab@sample.com")
+    s3 = Student("34567","g","z","abc@cba.bac")
+    s4 = Student("45678","Anna", "Alpha", "anna@home.de")
+    s5 = Student("56789","Benno", "Beta", "benno@home.com")
+    s7 = Student("67891","Benno", "der Zweite", "benno.zwei@mail.com")
+    s6 = Student("78912","Celine","Gamma","123@test.com")
+
+    #- create courses
     c1 = Course("101", "QM1")
-    g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
-    s2 = Student("a", "b","ab@sample.com")
-    s3 = Student("g","z","abc@cba.bac")
-    s4 = Student("Anna", "Alpha", "anna@home.de")
-    s5 = Student("Benno", "Beta", "benno@home.com")
-    s7 = Student("Benno", "der Zweite", "benno.zwei@mail.com")
-    s6 = Student("Celine","Gamma","123@test.com")
     c2 = Course("102", "Python classics")
     c3 = Course("103","Higher Category Theory", 100.0, 75)
     c4  = Course("104", "QM2", 100, 50)
-    #print(f"Letter-Grade: {g1.letter_grade}")
-    #print(f"Pass: {g1.is_passing}")
-    # #print(s1)
-    gbook = GradeBook()
+
+    #- register students
     gbook.add_student(s1)
     gbook.add_student(s2)
-    gbook.add_course(c1)
     gbook.add_student(s3)
     gbook.add_student(s4)
     gbook.add_student(s5)
+    gbook.add_student(s6)
     gbook.add_student(s7)
+
+    #- register courses
+    gbook.add_course(c1)
     gbook.add_course(c2)
     gbook.add_course(c3)
     gbook.add_course(c4)
-    gbook.record_grade(s1,c1,99,"03.07.2026")
-    gbook.record_grade(s2,c2,50,"03.07.2026")
-    gbook.record_grade(s1,c2,100,"10.06.2026")
-    gbook.record_grade(s3,c2,95)
-    gbook.record_grade(s5,c1,30,"03.07.2026")
-    gbook.record_grade(s4,c3,25,"03.07.2026")
-    #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
-    #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
+
+    #- record grades
+    # gbook.record_grade(s1,c1,99,"03.07.2026")
+    # gbook.record_grade(s2,c2,50,"03.07.2026")
+    # gbook.record_grade(s1,c2,100,"10.06.2026")
+    # gbook.record_grade(s3,c2,95)
+    # gbook.record_grade(s5,c1,30,"03.07.2026")
+    # gbook.record_grade(s4,c3,25,"03.07.2026")
+    
+    #- print grades, courses, students
     #print(gbook.grades)
     #print(gbook.courses)
+    #print(gbook.students)
+
+    #- evaluate individual methods and print results
     #print(gbook.get_student_grades(s1))
     #print(gbook.get_course_grades(c1))
     #print(gbook.student_average("001"))
@@ -431,11 +459,15 @@ def main():
     #print(gbook.top_students(3))
     #print(gbook.top_students(4))
     #print(gbook.students_at_risk(50))
-    print(gbook.search_students("benno"))
+    #print(gbook.search_students("benno"))
     #print(gbook.search_course("higher"))
+
+    #- save and load json files
     #gbook.save_as_json("gradebook.json")
     #gradebook = GradeBook.load_from_json("gradebook.json")
-    #print(gradebook.students)
+    
+    #- read and write csv files
+    gbook.read_csv_grade()
     
 
  
