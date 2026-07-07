@@ -309,6 +309,11 @@ class GradeBook:
                 }
 
 
+    def save_as_json(self, filename):
+        """Saves entire gradebook as json. Just enter a filename e.g. 'my_file.json' """
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(self.to_dict(), f, indent=4)
+
 
 
 
@@ -363,11 +368,9 @@ def main():
     #print(gbook.students_at_risk(50))
     #print(gbook.search_students("benno@home.com"))
     #print(gbook.search_course("higher"))
+    gbook.save_as_json("gradebook.json")
 
-    # JSON
-    gradebook_dict = gbook.to_dict()
-    with open("gradebook.json", "w", encoding="utf-8") as f:
-        json.dump(gradebook_dict, f, indent=4)
+ 
     
     
 
