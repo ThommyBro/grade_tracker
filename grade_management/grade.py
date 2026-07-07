@@ -229,25 +229,28 @@ class GradeBook:
     def search_students(self, query: str):
         """
         Search Students by Name or Mail.
-        Regex search if mailaddress is given, if so string is generated and compared with known student mail addresses.
+        Regex search if mailaddress is given, if so, string is generated and compared with known student mail addresses.
         If regex is None, full name search is performed.
         """
         # (...) optional if one skips top level domain part
         regex = r"^\w+@\w+(\.\w+)*$"
         mail_match = re.search(regex, query.strip())
+        possible_studis = []
   
         if mail_match:
             # extract string from mail_match with group()
             mail =  mail_match.group().lower()
             for studi in self.students: 
                 if mail.lower() in studi.email.lower():
-                    return studi
-            return f"No match found with mailaddress '{query}'."
+                    possible_studis.append(studi)
+            return f"Possible students with mail '{query}' found: \n{possible_studis}"
+            
         else:
             for studi in self.students: 
-                if query.lower() == studi.full_name.lower():
-                    return studi
-            return f"No match with Name '{query}' found."
+                if query.lower() in studi.first_name.lower() or query.lower() in studi.last_name.lower():
+                    possible_studis.append(studi)
+            return  f"Possible students with name '{query}' found: \n{possible_studis}"
+            
         
 
     def search_course(self, query: str):
@@ -343,7 +346,7 @@ class GradeBook:
     def load_from_json(cls, filename):
         """
         Call by g = Gradebook.load_from_json("filename.json")
-        Instantiates a new gradebook.
+        Instantiates a new gradebook and load complete data from .json file.
         Returns complete gradebook with all students and courses.
         """
         with open(filename, encoding="utf-8") as f:
@@ -354,9 +357,9 @@ class GradeBook:
 
         # implement students from data
         students = {}
-        for s in loaded["students"]:
-            student = Student(**s)
-            students[student.student_id] = student
+        for s in loaded["students"]: # loaded["students"] = key with value = list of dicts of student attributes
+            student = Student(**s)  #  generates Student object with attributes-names from keys and attribute-values from values by **s
+            students[student.student_id] = student 
             gbook.add_student(student)
 
         # implement courses from data
@@ -382,40 +385,40 @@ class GradeBook:
 
 
 
-
-
 ######################## MAIN() ########################
 def main():
-    # s1 = Student("t", "b","some.student@mit.com")
-    # c1 = Course("101", "QM1")
-    # g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
-    # s2 = Student("a", "b","ab@sample.com")
-    # s3 = Student("g","z","abc@cba.bac")
-    # s4 = Student("Anna", "Alpha", "anna@home.de")
-    # s5 = Student("Benno", "Beta", "benno@home.com")
-    # s6 = Student("Celine","Gamma","123@test.com")
-    # c2 = Course("102", "Python classics")
-    # c3 = Course("103","Higher Category Theory", 100.0, 75)
-    # c4  = Course("104", "QM2", 100, 50)
+    s1 = Student("t", "b","some.student@mit.com")
+    c1 = Course("101", "QM1")
+    g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
+    s2 = Student("a", "b","ab@sample.com")
+    s3 = Student("g","z","abc@cba.bac")
+    s4 = Student("Anna", "Alpha", "anna@home.de")
+    s5 = Student("Benno", "Beta", "benno@home.com")
+    s7 = Student("Benno", "der Zweite", "benno.zwei@mail.com")
+    s6 = Student("Celine","Gamma","123@test.com")
+    c2 = Course("102", "Python classics")
+    c3 = Course("103","Higher Category Theory", 100.0, 75)
+    c4  = Course("104", "QM2", 100, 50)
     #print(f"Letter-Grade: {g1.letter_grade}")
     #print(f"Pass: {g1.is_passing}")
     # #print(s1)
-    # gbook = GradeBook()
-    # gbook.add_student(s1)
-    # gbook.add_student(s2)
-    # gbook.add_course(c1)
-    # gbook.add_student(s3)
-    # gbook.add_student(s4)
-    # gbook.add_student(s5)
-    # gbook.add_course(c2)
-    # gbook.add_course(c3)
-    # gbook.add_course(c4)
-    # gbook.record_grade(s1,c1,99,"03.07.2026")
-    # gbook.record_grade(s2,c2,50,"03.07.2026")
-    # gbook.record_grade(s1,c2,100,"10.06.2026")
-    # gbook.record_grade(s3,c2,95)
-    # gbook.record_grade(s5,c1,30,"03.07.2026")
-    # gbook.record_grade(s4,c3,25,"03.07.2026")
+    gbook = GradeBook()
+    gbook.add_student(s1)
+    gbook.add_student(s2)
+    gbook.add_course(c1)
+    gbook.add_student(s3)
+    gbook.add_student(s4)
+    gbook.add_student(s5)
+    gbook.add_student(s7)
+    gbook.add_course(c2)
+    gbook.add_course(c3)
+    gbook.add_course(c4)
+    gbook.record_grade(s1,c1,99,"03.07.2026")
+    gbook.record_grade(s2,c2,50,"03.07.2026")
+    gbook.record_grade(s1,c2,100,"10.06.2026")
+    gbook.record_grade(s3,c2,95)
+    gbook.record_grade(s5,c1,30,"03.07.2026")
+    gbook.record_grade(s4,c3,25,"03.07.2026")
     #gbook.record_grade(Student("007","Thomas","B","some@mail.com"), c1) # student not known
     #gbook.record_grade(s1,Course("123","Category Theory 101"),100) # course not known
     #print(gbook.grades)
@@ -428,11 +431,12 @@ def main():
     #print(gbook.top_students(3))
     #print(gbook.top_students(4))
     #print(gbook.students_at_risk(50))
-    #print(gbook.search_students("benno@home.com"))
+    print(gbook.search_students("benno"))
     #print(gbook.search_course("higher"))
     #gbook.save_as_json("gradebook.json")
-    gradebook = GradeBook.load_from_json("gradebook.json")
-    print(gradebook.students)
+    #gradebook = GradeBook.load_from_json("gradebook.json")
+    #print(gradebook.students)
+    
 
  
     
