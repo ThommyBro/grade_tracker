@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 import re
+import json
 from student import Student 
 from course import Course
 
@@ -19,6 +20,10 @@ class Grade():
             raise ValueError(f"Score {self.score} out of range "                
                              f"[0, {self.course.max_grade}]"           
                              )
+        
+    
+    def __repr__(self):
+        return f"{self.score}, {self.date}, {self.notes}"
         
 
     @property
@@ -262,7 +267,47 @@ class GradeBook:
                     possible_courses.append(subject)
             return possible_courses
         return f"No course '{query}' found." 
- 
+    
+
+
+
+     #----------- JSON Stuff -----------#
+
+    def to_dict(self):
+        """
+        write a dictionary with students, courses and grades. 
+        """
+        return {
+                "students": [
+                    {
+                        "student_id": stud.student_id,
+                        "first_name": stud.first_name,
+                        "last_name": stud.last_name,
+                        "email": stud.email
+                     }
+                     for stud in self.students
+                ],
+                "courses": [
+                    {
+                        "course_id": course.course_id,
+                        "name": course.name,
+                        "max_grade": course.max_grade,
+                        "passing_grade": course.passing_grade
+                    }
+                    for course in self.courses
+                ],
+                "grade": [
+                    {
+                        "student_id": grade.student.student_id,
+                        "course_id": grade.course.course_id,
+                        "score": grade.score,
+                        "date": grade.date,
+                        "notes": grade.notes
+                    }
+                    for grade in self.grades
+                ]
+                }
+
 
 
 
@@ -274,7 +319,7 @@ class GradeBook:
 
 ######################## MAIN() ########################
 def main():
-    s1 = Student("t", "b","some@mit.com")
+    s1 = Student("t", "b","some.student@mit.com")
     c1 = Course("101", "QM1")
     g1 = Grade(s1,c1, 100, "01.07.2026", "some note")
     s2 = Student("a", "b","ab@sample.com")
@@ -317,7 +362,12 @@ def main():
     #print(gbook.top_students(4))
     #print(gbook.students_at_risk(50))
     #print(gbook.search_students("benno@home.com"))
-    print(gbook.search_course("higher"))
+    #print(gbook.search_course("higher"))
+
+    # JSON
+    gradebook_dict = gbook.to_dict()
+    with open("gradebook.json", "w", encoding="utf-8") as f:
+        json.dump(gradebook_dict, f, indent=4)
     
     
 
