@@ -13,7 +13,7 @@ def id_generator():
 
 @dataclass
 class Student:
-    student_id: str = field(default_factory=id_generator, kw_only=True) # key-word only, stud_id can be first attribute despite standard value
+    student_id: str # = field(default_factory=id_generator, kw_only=True) # key-word only, stud_id can be first attribute despite standard value
     first_name: str
     last_name: str
     email: str
