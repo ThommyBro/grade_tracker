@@ -93,7 +93,7 @@ class GradeBook:
             raise ValueError(f"Course {course.name} already exists.")
         
 
-    def record_grade(self, student: Student, course: Course, score=0, date="", note=""):
+    def record_grade(self, student: Student, course: Course, score=0.0, date="", note=""):
         """
         Creates Grade Object.
         Checks if stundent and course exists.
@@ -413,42 +413,86 @@ class GradeBook:
             successful = 0
             all_rows = 0
 
+            # count doublets in csv
+            duplicates_in_csv_count = 0
+            duplicates_in_csv = set()
+            duplicates = []
+            
+
              # Reading each row of the CSV
             for row in grade_reader:
-                # if empty line stop reading
+                 # if empty line stop reading
                 if not row:
                     break
+
+                # for better reading
+                studid = row[0]
+                courseid = row[1]
+                score = row[2]
+                date = row[3]
+
                 # if student id is unknown
-                elif not row[0] in known_students.keys():
+                if not studid in known_students.keys():
+                    #print("not student")
                     unknown_students_count += 1
-                    unknown_students.append(row[0])
+                    unknown_students.append(studid)
                 # if course id is unknown
-                elif not row[1] in known_courses.keys():
+                elif not courseid in known_courses.keys():
+                    #print("not course")
                     unknwon_courses_count += 1
-                    unknwon_courses.append(row[1])
-                # course- and student id are known -> grading will be imported
+                    unknwon_courses.append(courseid)
+
                 else:
-                    self.record_grade(known_students[row[0]], known_courses[row[1]],int(row[2]),row[3])
-                    successful += 1
+                    # count doubles in csv file
+                    # make student/course tuples for comparison
+                    student_course_tuple = (studid, courseid)
+                    
+                    if student_course_tuple in duplicates_in_csv:
+                        duplicates_in_csv_count += 1
+                        duplicates.append(student_course_tuple)
+                    
+                    else:
+                        self.record_grade(known_students[studid], known_courses[courseid],float(score),date)
+                        # count successful grading
+                        successful += 1
+                        # add tuple to duplicate set 
+                        duplicates_in_csv.add(student_course_tuple)
                 # count +1 for read row
                 all_rows += 1
 
+                # count if students have already taken this very course -- under construction!
+                            # if row[0] in self.grades.Student.student_id and row[1] == self.grades.course.course_id:
+                            #     print(f"{row[0]} student has already taken this course {row[1]}")
+                            #     doubles += 1
+                            # else:
+                            #     self.record_grade(known_students[row[0]], known_courses[row[1]],float(row[2]),row[3])
+                            #     successful += 1
+                            # no grades are set yet
+                
+
             # print results
             students_result = (
-                            f"{unknown_students_count} student ids were not known: {unknown_students}\n"
-                            if unknown_students_count > 0 
-                            else "all student ids were found.\n"
-                        )
+                                f"{unknown_students_count} student ids were not known: {unknown_students}\n"
+                                if unknown_students_count > 0 
+                                else "all student ids were found.\n"
+                            )
             
-            courses_result =   (
-                            f"{unknwon_courses_count} course ids were not found: {unknwon_courses}\n"
-                            if unknown_students_count > 0
-                            else "all courses were found.\n"
-                        )
+            courses_result =  (
+                                f"{unknwon_courses_count} course ids were not found: {unknwon_courses}\n"
+                                if unknown_students_count > 0
+                                else "all courses were found.\n"
+                            )
+            
+            duplicates_result = (
+                                    f"{duplicates_in_csv_count} were found in this csv: {duplicates}\n"
+                                    if duplicates_in_csv_count > 0
+                                    else "0 duplicates found.\n"
+                                )
             print(
                     f"{successful} / {all_rows} grades successful importet\n"
                     f"{students_result}"
                     f"{courses_result}"
+                    f"{duplicates_result}"
                   )
             
 
@@ -523,7 +567,9 @@ def main():
     #gradebook = GradeBook.load_from_json("gradebook.json")
     
     #- read and write csv files
+    #print(gbook.get_student_grades(s1))
     gbook.read_csv_grade()
+    #print(gbook.get_student_grades(s1))
     
 
  
