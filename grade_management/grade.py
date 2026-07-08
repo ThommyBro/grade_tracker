@@ -386,6 +386,12 @@ class GradeBook:
 
     # ------- CSV Stuff --------#
     def read_csv_grade(self):
+        """
+        Reads a csv file 'grades.csv' from same directory as this py file.
+        Counts and list unknown stundet ids.
+        Counts and list unknown course ids.
+        If an empty row is found in the csv reading stopps, no error is thrown.
+        """
         with open('grades.csv', 'r', newline='', encoding="utf-8") as csvfile:
             grade_reader = csv.reader(csvfile)
         
@@ -397,29 +403,52 @@ class GradeBook:
             known_courses = {Course.course_id: Course for Course in self.courses}
 
             # initialize counter for unknown students and courses respectively
-            unknown_students = 0
-            unknwon_courses = 0
+            unknown_students_count = 0
+            unknown_students = []
 
-            # counter for successful imports
+            unknwon_courses_count = 0
+            unknwon_courses = []
+
+            # counter for successful imports and all given rows
             successful = 0
+            all_rows = 0
 
              # Reading each row of the CSV
             for row in grade_reader:
+                # if empty line stop reading
+                if not row:
+                    break
                 # if student id is unknown
-                if not row[0] in known_students.keys():
-                    unknown_students += 1
+                elif not row[0] in known_students.keys():
+                    unknown_students_count += 1
+                    unknown_students.append(row[0])
                 # if course id is unknown
                 elif not row[1] in known_courses.keys():
-                    unknwon_courses += 1
+                    unknwon_courses_count += 1
+                    unknwon_courses.append(row[1])
                 # course- and student id are known -> grading will be imported
                 else:
                     self.record_grade(known_students[row[0]], known_courses[row[1]],int(row[2]),row[3])
                     successful += 1
+                # count +1 for read row
+                all_rows += 1
+
             # print results
+            students_result = (
+                            f"{unknown_students_count} student ids were not known: {unknown_students}\n"
+                            if unknown_students_count > 0 
+                            else "all student ids were found.\n"
+                        )
+            
+            courses_result =   (
+                            f"{unknwon_courses_count} course ids were not found: {unknwon_courses}\n"
+                            if unknown_students_count > 0
+                            else "all courses were found.\n"
+                        )
             print(
-                    f"{successful} grades successful importet\n"
-                    f"{unknown_students} student ids where not known\n"
-                    f"{unknwon_courses} course ids where not known.\n"
+                    f"{successful} / {all_rows} grades successful importet\n"
+                    f"{students_result}"
+                    f"{courses_result}"
                   )
             
 
