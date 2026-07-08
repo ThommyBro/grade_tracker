@@ -336,7 +336,7 @@ class GradeBook:
 
     def student_hook(self, d):
         if d.get("_type") == "student":
-            return Student(d["first_name"], d["last_name"], d["email"])
+            return Student(d["student_id"], d["first_name"], d["last_name"], d["email"])
         return d
     
 ##################
@@ -389,13 +389,40 @@ class GradeBook:
         with open('grades.csv', 'r', newline='', encoding="utf-8") as csvfile:
             grade_reader = csv.reader(csvfile)
         
-        # Reading the header
-            header = next(grade_reader )
-            print('Header:', header)
+            # Reading the header
+            header = next(grade_reader ) # extract header
 
-        # Reading each row of the CSV
+            # Dict-comprehension for student ids and course id respectivley for easy search and grading by ids
+            known_students = {Student.student_id: Student for Student in self.students}
+            known_courses = {Course.course_id: Course for Course in self.courses}
+
+            # initialize counter for unknown students and courses respectively
+            unknown_students = 0
+            unknwon_courses = 0
+
+            # counter for successful imports
+            successful = 0
+
+             # Reading each row of the CSV
             for row in grade_reader:
-                print('Row:', row)
+                # if student id is unknown
+                if not row[0] in known_students.keys():
+                    unknown_students += 1
+                # if course id is unknown
+                elif not row[1] in known_courses.keys():
+                    unknwon_courses += 1
+                # course- and student id are known -> grading will be imported
+                else:
+                    self.record_grade(known_students[row[0]], known_courses[row[1]],int(row[2]),row[3])
+                    successful += 1
+            # print results
+            print(
+                    f"{successful} grades successful importet\n"
+                    f"{unknown_students} student ids where not known\n"
+                    f"{unknwon_courses} course ids where not known.\n"
+                  )
+            
+
 
 
 
