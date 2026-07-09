@@ -1,0 +1,8 @@
+Student ID,Firstname,Lastname,Course ID,Course name,Score,Pass,Date
+12345,t,b,101,QM1,99,True,03.07.2026
+23456,a,b,102,Python classics,50,True,03.07.2026
+12345,t,b,102,Python classics,100,True,10.06.2026
+34567,g,z,102,Python classics,95,True,
+56789,Benno,Beta,101,QM1,30,False,03.07.2026
+45678,Anna,Alpha,103,Higher Category Theory,25,False,03.07.2026
+Student ID,Firstname,Lastname,Course ID,Course name,Score,Pass,Date

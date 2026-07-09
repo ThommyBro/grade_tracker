@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import re
 import json
 import csv
+from pathlib import Path
 from student import Student 
 from course import Course
 
@@ -18,8 +19,9 @@ class Grade():
 
     def __post_init__(self):      
         if not 0 <= self.score <= self.course.max_grade:
-            raise ValueError(f"Score {self.score} out of range "                
-                             f"[0, {self.course.max_grade}]"           
+            raise ValueError(
+                                f"Score {self.score} out of range "                
+                                f"[0, {self.course.max_grade}]"           
                              )
         
     
@@ -205,7 +207,7 @@ class GradeBook:
         return all_stud_avgs
                                                     
 
-    def top_students(self, n: int):
+    def top_students(self, n: int = 5):
         """
         Top n students by overall average.
         """
@@ -391,6 +393,7 @@ class GradeBook:
         Counts and list unknown stundet ids.
         Counts and list unknown course ids.
         If an empty row is found in the csv reading stopps, no error is thrown.
+        Counts and list duplicates in the csv file.
         """
         with open('grades.csv', 'r', newline='', encoding="utf-8") as csvfile:
             grade_reader = csv.reader(csvfile)
@@ -470,21 +473,21 @@ class GradeBook:
                             # no grades are set yet
                 
 
-            # print results
+            # format results depending on their counts
             students_result = (
-                                f"{unknown_students_count} student ids were not known: {unknown_students}\n"
+                                f"{unknown_students_count} student ids were not known:\n {unknown_students}\n"
                                 if unknown_students_count > 0 
                                 else "all student ids were found.\n"
                             )
             
             courses_result =  (
-                                f"{unknwon_courses_count} course ids were not found: {unknwon_courses}\n"
+                                f"{unknwon_courses_count} course ids were not found:\n {unknwon_courses}\n"
                                 if unknown_students_count > 0
                                 else "all courses were found.\n"
                             )
             
             duplicates_result = (
-                                    f"{duplicates_in_csv_count} were found in this csv: {duplicates}\n"
+                                    f"{duplicates_in_csv_count} duplicates were found in this csv:\n{duplicates}\n"
                                     if duplicates_in_csv_count > 0
                                     else "0 duplicates found.\n"
                                 )
@@ -494,6 +497,36 @@ class GradeBook:
                     f"{courses_result}"
                     f"{duplicates_result}"
                   )
+            
+
+    def export_grade_csv(self):
+        """
+        Generates a csv file with student, courses and their grades.
+        """
+
+        # prepare data with header row
+        header = ['Student ID','Firstname','Lastname','Course ID','Course name','Score','Pass','Date']
+        data = [
+                (
+                    grade.student.student_id, grade.student.first_name, grade.student.last_name,
+                    grade.course.course_id, grade.course.name, grade.score, grade.is_passing, grade.date
+                )
+                    for grade in self.grades
+                ]
+                
+        
+        # new folder for csv export
+        path = Path.cwd() / "exports"
+        path.mkdir(exist_ok=True)
+
+        # empty csv file in new directory
+        grades_export = path / "grades_export.csv"
+        with open(grades_export, "w", newline="", encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            writer.writerows(data)
+            writer.writerow(header)
+
             
 
 
@@ -538,12 +571,12 @@ def main():
     gbook.add_course(c4)
 
     #- record grades
-    # gbook.record_grade(s1,c1,99,"03.07.2026")
-    # gbook.record_grade(s2,c2,50,"03.07.2026")
-    # gbook.record_grade(s1,c2,100,"10.06.2026")
-    # gbook.record_grade(s3,c2,95)
-    # gbook.record_grade(s5,c1,30,"03.07.2026")
-    # gbook.record_grade(s4,c3,25,"03.07.2026")
+    gbook.record_grade(s1,c1,99,"03.07.2026")
+    gbook.record_grade(s2,c2,50,"03.07.2026")
+    gbook.record_grade(s1,c2,100,"10.06.2026")
+    gbook.record_grade(s3,c2,95)
+    gbook.record_grade(s5,c1,30,"03.07.2026")
+    gbook.record_grade(s4,c3,25,"03.07.2026")
     
     #- print grades, courses, students
     #print(gbook.grades)
@@ -568,8 +601,9 @@ def main():
     
     #- read and write csv files
     #print(gbook.get_student_grades(s1))
-    gbook.read_csv_grade()
-    #print(gbook.get_student_grades(s1))
+    #gbook.read_csv_grade()
+    #print(gbook.grades)
+    gbook.export_grade_csv()
     
 
  
