@@ -7,6 +7,7 @@ class StudentRepository:
     def __init__(self, connection: sqlite3.Connection):
         self.conn = connection
 
+
     def create_table(self):
         with self.conn:
             self.conn.execute(
@@ -19,17 +20,31 @@ class StudentRepository:
             )
 
 
-    def add(self, student_id: str, first_name: str, last_name: str, email: str) -> Student:
+    def add(self, student: Student) -> None:
+        """Saves a student object into students table."""
         with self.conn:
             cursor = self.conn.execute(
-                "INSERT INTO students(student_id, first_name, last_name, email) VALUES(?, ?, ?, ?)",
-                (student_id, first_name, last_name, email)
+                """
+                    INSERT INTO students(
+                    student_id, 
+                    first_name, 
+                    last_name, 
+                    email
+                ) 
+                VALUES(?, ?, ?, ?)
+                """,
+                (
+                    student.student_id, 
+                    student.first_name, 
+                    student.last_name, 
+                    student.email
+                )
             )
-        assert cursor.lastrowid is not None, "Failed to insert student"
-        return Student(str(cursor.lastrowid), first_name, last_name, email)
+        
 
 
-    def get_by_id(self, student_id: int) -> Student | None:
+    def get_by_id(self, student_id: str) -> Student | None:
+        """Type in a student_id and get the corresponding student object back."""
         row = self.conn.execute(
             "SELECT * FROM students WHERE student_id = ?", 
             (student_id,)
@@ -39,16 +54,57 @@ class StudentRepository:
         return Student(*row)
 
 
-    def get_all(self):
-        rows = self.conn.execute("SELECT * FROM students")
+    def get_all(self) -> list[Student]:
+        """Returns a list of all students from the database"""
+        rows = self.conn.execute(
+            """
+            SELECT
+                student_id,
+                first_name,
+                last_name,
+                email 
+            FROM students
+            """
+              )
         return [Student(*row) for row in rows]
 
 
-    def update(self) -> Student:
+    def update(self, student: Student) -> None:
+        """Updates student database entry if it exists."""
         with self.conn:
-            self.conn.execute(
-                "UPDATE students SET first_name = ? last_name = ? email = ? WHERE student_id = ?",
-                (Student.first_name, Student.last_name, Student.email),
+            cursor = self.conn.execute(
+                """
+                UPDATE students 
+                SET 
+                    first_name = ? ,
+                    last_name = ? ,
+                    email = ? 
+                WHERE student_id = ?
+                """,
+                (
+                    student.first_name, 
+                    student.last_name, 
+                    student.email,
+                    student.student_id
+                    ),
             )
+
+            if cursor.rowcount == 0:
+                raise ValueError("Student not found")
+            
+    
+    def delete(self, student: Student) -> None:
+        """Deletes one Student from the database."""
+        with self.conn:
+            cursor = self.conn.execute(
+                """
+                DELETE FROM students 
+                WHERE student_id = ?
+                """,
+                (student.student_id,),
+            )
+            if cursor.rowcount == 0:
+                raise ValueError("Student not found")
+
 
  
