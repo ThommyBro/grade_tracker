@@ -11,11 +11,12 @@ class StudentRepository:
     def create_table(self):
         with self.conn:
             self.conn.execute(
-                """CREATE TABLE IF NOT EXISTS students(
-                student_id TEXT PRIMARY KEY,
-                first_name TEXT NOT NULL,
-                last_name TEXT NOT NULL,
-                email TEXT NOT NULL
+                """
+                CREATE TABLE IF NOT EXISTS students(
+                    student_id TEXT PRIMARY KEY,
+                    first_name TEXT NOT NULL,
+                    last_name TEXT NOT NULL,
+                    email TEXT NOT NULL
                 )"""
             )
 
@@ -23,7 +24,7 @@ class StudentRepository:
     def add(self, student: Student) -> None:
         """Saves a student object into students table."""
         with self.conn:
-            cursor = self.conn.execute(
+            self.conn.execute(
                 """
                     INSERT INTO students(
                     student_id, 
@@ -46,7 +47,15 @@ class StudentRepository:
     def get_by_id(self, student_id: str) -> Student | None:
         """Type in a student_id and get the corresponding student object back."""
         row = self.conn.execute(
-            "SELECT * FROM students WHERE student_id = ?", 
+            """
+            SELECT
+                student_id,
+                first_name,
+                last_name,
+                email
+            FROM students 
+            WHERE student_id = ?
+            """, 
             (student_id,)
         ).fetchone()
         if row is None:
