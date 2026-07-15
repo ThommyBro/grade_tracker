@@ -24,7 +24,7 @@ class Grade():
     
 
     def __post_init__(self):      
-        if not 0 <= self.score <= self.course.max_grade:
+        if not 0.0 <= self.score <= self.course.max_grade:
             raise ValueError(
                                 f"Score {self.score} out of range "                
                                 f"[0, {self.course.max_grade}]"           
