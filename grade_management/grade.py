@@ -6,7 +6,13 @@ from pathlib import Path
 from grade_management.student import Student 
 from grade_management.course import Course
 
-
+# ===================================================
+#               Main file
+#
+# start with python3 -m grade_management.grade from Terminal
+# use main()-functionality for tests
+#
+# ===================================================
 
 @dataclass
 class Grade():
@@ -579,7 +585,7 @@ def main():
     gbook.record_grade(s4,c3,25,"03.07.2026")
     
     #- print grades, courses, students
-    #print(gbook.grades)
+    print(gbook.grades)
     #print(gbook.courses)
     #print(gbook.students)
 
@@ -603,7 +609,7 @@ def main():
     #print(gbook.get_student_grades(s1))
     #gbook.read_csv_grade()
     #print(gbook.grades)
-    gbook.export_grade_csv()
+    #gbook.export_grade_csv()
     
 
  
