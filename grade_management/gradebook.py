@@ -305,13 +305,18 @@ class GradeBook:
 
    # ------- load JSON --------#
     @classmethod
-    def load_from_json(cls, filename):
+    def load_from_json(cls, file):
         """
         Call by g = Gradebook.load_from_json("filename.json")
         Instantiates a new gradebook and load complete data from .json file.
         Returns complete gradebook with all students and courses.
         """
-        with open(filename, encoding="utf-8") as f:
+
+        # define filename with path
+        script_dir = Path(__file__).resolve().parent
+        file_path = script_dir / file
+
+        with open(file_path, encoding="utf-8") as f:
             loaded = json.load(f)
         
         # define new gradebook
@@ -346,7 +351,7 @@ class GradeBook:
     
 
     # ------- CSV Stuff --------#
-    def read_csv_grade(self):
+    def read_csv_grade(self, file: str):
         """
         Reads a csv file 'grades.csv' from same directory as this py file.
         Counts and list unknown stundet ids.
@@ -354,7 +359,19 @@ class GradeBook:
         If an empty row is found in the csv reading stopps, no error is thrown.
         Counts and list duplicates in the csv file.
         """
-        with open('grades.csv', 'r', newline='', encoding="utf-8") as csvfile:
+
+        # define regular expressions 
+        regex_studid = r"^[0-9]*$"
+        regex_courseid = r"^[0-9]*$"
+        regex_score = r"^\d+(?:\.\d+)?$"
+        regex_date = r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.\d{4}$"
+
+        # define filename with path
+        script_dir = Path(__file__).resolve().parent
+        file_path = script_dir / file
+        
+
+        with open(file_path, 'r', newline='', encoding="utf-8") as csvfile:
             grade_reader = csv.reader(csvfile)
         
             # Reading the header
@@ -393,8 +410,22 @@ class GradeBook:
                 score = row[2]
                 date = row[3]
 
+                # regex checks for current row entries
+                if not re.search(regex_studid, studid):
+                    unknown_students_count += 1
+                    unknown_students.append(studid)
+                    continue    # wrong stud_id format -> next line in csv
+                elif not re.search(regex_courseid, courseid):
+                    unknwon_courses_count += 1
+                    unknwon_courses.append(courseid)
+                    continue    # wrong course_id format -> next line in csv
+                elif not re.search(regex_score, score):
+                    continue    # wrong score format -> next line in csv
+                elif not re.search(regex_date, date):
+                    continue    # wrong date format -> next line csv
+
                 # if student id is unknown
-                if not studid in known_students.keys():
+                elif not studid in known_students.keys():
                     #print("not student")
                     unknown_students_count += 1
                     unknown_students.append(studid)
@@ -530,15 +561,15 @@ def main():
     gbook.add_course(c4)
 
     #- record grades
-    gbook.record_grade(s1,c1,99,"03.07.2026")
-    gbook.record_grade(s2,c2,50,"03.07.2026")
-    gbook.record_grade(s1,c2,100,"10.06.2026")
-    gbook.record_grade(s3,c2,95)
-    gbook.record_grade(s5,c1,30,"03.07.2026")
-    gbook.record_grade(s4,c3,25,"03.07.2026")
+    # gbook.record_grade(s1,c1,99,"03.07.2026")
+    # gbook.record_grade(s2,c2,50,"03.07.2026")
+    # gbook.record_grade(s1,c2,100,"10.06.2026")
+    # gbook.record_grade(s3,c2,95)
+    # gbook.record_grade(s5,c1,30,"03.07.2026")
+    # gbook.record_grade(s4,c3,25,"03.07.2026")
     
     #- print grades, courses, students
-    print(gbook.grades)
+    #print(gbook.grades)
     #print(gbook.courses)
     #print(gbook.students)
 
@@ -560,7 +591,7 @@ def main():
     
     #- read and write csv files
     #print(gbook.get_student_grades(s1))
-    #gbook.read_csv_grade()
+    gbook.read_csv_grade('grades.csv')
     #print(gbook.grades)
     #gbook.export_grade_csv()
     
