@@ -3,8 +3,8 @@ import re
 import json
 import csv
 from pathlib import Path
-from student import Student 
-from course import Course
+from grade_management.student import Student 
+from grade_management.course import Course
 
 
 

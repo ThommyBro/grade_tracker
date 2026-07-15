@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from grade_management.course import Course
 from grade_management.student import Student
 from grade_management.grade import Grade
+ 
 
 # ------- Create Connection for all repos ------- #
 def create_connection(db_path: str = ":memory:") -> sqlite3.Connection:
@@ -27,7 +28,7 @@ class CourseRepository:
                 """CREATE TABLE IF NOT EXISTS courses(
                 course_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                max_grade REAL NOT NULL DEFAULT 100.0
+                max_grade REAL NOT NULL DEFAULT 100.0,
                 passing_grade REAL NOT NULL DEFAULT 50.0
                 )"""
             )
@@ -167,3 +168,37 @@ class GradeRepository:
                 "UPDATE grades SET student_id = ? student_id = ? course_id = ? score = ? date = ? notes WHERE id = ?",
                 (Grade.student, Grade.course, Grade.score, Grade.date, Grade.notes),
             )
+
+
+
+
+
+
+def main():
+    # Connection creation:                 
+    con = create_connection()
+
+    # define all repos
+    course_repo = CourseRepository(con)
+    student_repo = StudentRepository(con)
+    grade_repo = GradeRepository(con)
+
+    # create tables in all repos
+    course_repo.create_table()
+    student_repo.create_table()
+    grade_repo.create_table
+
+    # Daten einfügen:
+    # repo.add("Exercise", "Daily workout")
+    # repo.add("Read", "Read before bed")
+    # repo.get_all()
+
+
+
+
+
+
+
+# ---- Check for main file ---- #
+if __name__ == "__main__":
+    main()
