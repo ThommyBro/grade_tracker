@@ -1,13 +1,21 @@
 import sqlite3
-
+from dataclasses import dataclass
 from grade_management.course import Course
 from grade_management.student import Student
 from grade_management.grade import Grade
  
 
 
-
-
+# --- Auxillary dataclasses --- #
+@dataclass
+class GradeRecord:
+    """Only to keep repos seperated, so the GradeRepo can return this object."""
+    id: int
+    student_id: str
+    course_id: str
+    score: float
+    date: str
+    notes: str
 
 # --- Grading --- #
 class GradeRepository:
@@ -17,50 +25,119 @@ class GradeRepository:
     def create_table(self):
         with self.conn:
             self.conn.execute(
-                """CREATE TABLE IF NOT EXISTS grades(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                student_id TEXT NOT NULL,
-                course_id TEXT NOT NULL,
-                score REAL NOT NULL,
-                date TEXT NOT NULL,
-                notes TEXT DEFAULT '',
-                FOREIGN KEY (student_id) REFERENCES students(student_id),
-                FOREIGN KEY (course_id) REFERENCES courses(course_id)
+                """C
+                REATE TABLE IF NOT EXISTS grades(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student_id TEXT NOT NULL,
+                    course_id TEXT NOT NULL,
+                    score REAL NOT NULL,
+                    date TEXT NOT NULL,
+                    notes TEXT DEFAULT '',
+                    FOREIGN KEY (student_id) REFERENCES students(student_id),
+                    FOREIGN KEY (course_id) REFERENCES courses(course_id)
                 )"""
             )
 
 
-    def add(self, id: int, student_id: str, course_id: str, score: float, date: str = '', notes: str = '') -> Grade:
+    def add(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> None:
         with self.conn:
             cursor = self.conn.execute(
-                "INSERT INTO grades(id, student_id, course_id, score, date, notes) VALUES(?, ?, ?, ?, ? ,?)",
-                (id, student_id, course_id, score, date, notes)
+                """
+                INSERT INTO grades(
+                    grade.student.student_id, 
+                    grade.course.course_id, 
+                    score, 
+                    date, 
+                    notes
+                ) 
+                VALUES(?, ?, ?, ?, ?)
+                """,
+                (
+                    student_id, 
+                    course_id, 
+                    score, 
+                    date, 
+                    notes
+                )
             )
-        assert cursor.lastrowid is not None, "Failed to insert grade"
-        #return Grade(student_id, course_id, score, date, notes)
+        
+        
 
 
-    def get_by_id(self, id: int) -> Grade | None:
+    def get_by_id(self, grade_id: int) -> GradeRecord | None:
         row = self.conn.execute(
-            "SELECT * FROM grades WHERE id = ?", 
-            (id,)
+            """
+            SELECT 
+                id,
+                student_id,
+                course_id,
+                score,
+                date,
+                notes 
+            FROM grades 
+            WHERE id = ?
+            """, 
+            (grade_id,)
         ).fetchone()
         if row is None:
             return None
-        return Grade(*row)
+        return GradeRecord(*row)
 
 
-    def get_all(self):
-        rows = self.conn.execute("SELECT * FROM grades")
-        return [Grade(*row) for row in rows]
-
-
-    def update(self) -> Grade:
-        with self.conn:
-            self.conn.execute(
-                "UPDATE grades SET student_id = ? student_id = ? course_id = ? score = ? date = ? notes WHERE id = ?",
-                (Grade.student, Grade.course, Grade.score, Grade.date, Grade.notes),
+    def get_all(self) -> list[GradeRecord]:
+        rows = self.conn.execute(
+            """
+            SELECT 
+                id,
+                student_id,
+                course_id,
+                score,
+                date,
+                notes 
+            FROM grades
+            """
             )
+        return [GradeRecord(*row) for row in rows]
+
+
+    def update(self, graderecord: GradeRecord) -> None:
+        with self.conn:
+            cursor = self.conn.execute(
+                """
+                UPDATE grades 
+                SET 
+                    student_id = ? ,
+                    course_id = ? ,
+                    score = ? ,
+                    date = ? ,
+                    notes = ? 
+                WHERE id = ?
+                """,
+                (
+                    graderecord.student_id, 
+                    graderecord.course_id, 
+                    graderecord.score, 
+                    graderecord.date, 
+                    graderecord.notes,
+                    graderecord.id
+                ),
+            )
+            if cursor.rowcount == 0:
+                raise ValueError("Graderecord not found")
+            
+    
+    def delete(self, graderecord: GradeRecord) -> None:
+        """Deletes one graderecord from the database."""
+        with self.conn:
+            cursor = self.conn.execute(
+                """
+                DELETE FROM grades 
+                WHERE id = ?
+                """,
+                (graderecord.id,),
+            )
+            if cursor.rowcount == 0:
+                raise ValueError("Graderecord not found")
 
 
 

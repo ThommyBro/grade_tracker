@@ -95,7 +95,7 @@ class StudentRepository:
                     student.last_name, 
                     student.email,
                     student.student_id
-                    ),
+                ),
             )
 
             if cursor.rowcount == 0:
