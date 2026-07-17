@@ -86,8 +86,12 @@ def main():
     # Load all extracted data to fill database with sample data
     load_sample_data(student_repo, course_repo, grade_repo, stats_repo)
 
+   
+
     print("\nSQL statistics:")
-    print(stats_repo.average_per_student())
+    print(stats_repo.count_students_per_course())
+
+    
 
 
 
@@ -97,8 +101,8 @@ def main():
 
     gbook = setup_gradebook(data)   
 
-    print("\nPython statistics:")
-    print(gbook.all_student_averages())
+    #print("\nPython statistics:")
+    #print(gbook.all_student_averages())
 
 
  
