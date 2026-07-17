@@ -39,9 +39,35 @@ class GradeRepository:
             )
 
 
+    def grade_exists(self, grade: Grade) -> bool:
+        """
+        Define two grades to be the same when: same student_id, same course_id and same date.
+        """
+        row = self.conn.execute(
+            """
+            SELECT 1 
+            FROM grades
+            WHERE student_id = ? AND course_id = ? AND date = ?
+            """,
+            (
+                grade.student.student_id, 
+                grade.course.course_id, 
+                grade.date
+            )
+        ).fetchone()
+
+        return row is not None
+
+
     def add(self, grade: Grade) -> None:
+        
+        # Check if grade is known
+        if self.grade_exists(grade):
+            return 
+        
+
         with self.conn:
-            cursor = self.conn.execute(
+            self.conn.execute(
                 """
                 INSERT INTO grades(
                     student_id, 
