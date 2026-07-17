@@ -96,6 +96,10 @@ def populate_database(student_repo: StudentRepository, course_repo: CourseReposi
     """
     Adds sample data to database only if it not exists.
     """
+    print()
+    print(f"Students: {len(data.students)}")
+    print(f"Courses: {len(data.courses)}")
+    print(f"Grades: {len(data.grades)}")
 
     for student in data.students.values():
         student_repo.add(student)
@@ -104,5 +108,7 @@ def populate_database(student_repo: StudentRepository, course_repo: CourseReposi
         course_repo.add(course)
 
     for grade in data.grades:
+        #print(f"Adding grade: {grade}")
         grade_repo.add(grade)
+        
 
