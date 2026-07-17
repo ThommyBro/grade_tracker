@@ -121,7 +121,7 @@ class GradeBook:
                 total += grade.percentage
                 count += 1
         return (
-                round(total/count,1) if count > 0
+                round(total/count,2) if count > 0
                 else f"Course {courseID} has no participants."
                 )
    

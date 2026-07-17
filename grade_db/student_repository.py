@@ -20,9 +20,30 @@ class StudentRepository:
                 )"""
             )
 
+    
+    def student_exists(self, student_id: str) -> bool:
+        """Checks if student_id is already known"""
+        row = self.conn.execute(
+            """
+            SELECT 1
+            FROM students
+            WHERE student_id = ?
+            """,
+            (student_id,)
+        ).fetchone()
+        return row is not None
+
+
 
     def add(self, student: Student) -> None:
-        """Saves a student object into students table."""
+        """
+        Saves a student object into students table.
+        If Student is known it will be skipped.
+        """
+
+        if self.student_exists(student.student_id):
+            return 
+        
         with self.conn:
             self.conn.execute(
                 """

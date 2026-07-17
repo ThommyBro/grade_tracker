@@ -14,24 +14,17 @@ from grade_db.grade_repository import GradeRepository
 from grade_db.statistics_repository import StatisticsRepository
 
 
-def main():
 
-    # Create sample data
-    data = create_test_data()
+# =============================
+#    Database Stuff
+# =============================
 
-
-    # Create GradeBook
-    gbook = GradeBook()
-
-    
-    # Populate GradeBook
-    populate_gradebook(gbook, data)
-
+def setup_database():
+    """Create all repos and tables in DB."""
 
     # Create database connection in Grade_Tracker path
     # Creates 'grade.db' file, if it not exists
     con = create_connection()
-
 
     # Create repositories
     student_repo = StudentRepository(con)
@@ -39,32 +32,76 @@ def main():
     grade_repo = GradeRepository(con)
     stats_repo = StatisticsRepository(con)
 
-
     # Create database tables
     student_repo.create_table()
     course_repo.create_table()
     grade_repo.create_table()
 
+    return (
+                con,
+                student_repo,
+                course_repo,
+                grade_repo,
+                stats_repo
+            )
 
-    # Populate database
-    populate_database(
-        student_repo,
-        course_repo,
-        grade_repo,
-        data,
-    )
+
+def load_sample_data(student_repo, course_repo, grade_repo, stats_repo):
+
+    # Load all data from sampla_data
+    data = create_test_data()
+
+    # Fill in data to database
+    populate_database(student_repo, course_repo, grade_repo, data)
 
 
-    # Test output
-    print("Students:")
-    print(student_repo.get_all())
 
-    print("\nCourses:")
-    print(course_repo.get_all())
+# =============================
+#    Python Stuff
+# =============================
+def setup_gradebook(data):
 
-    print("\nGrades:")
-    print(grade_repo.get_all())
+    # Create gradebook
+    gbook = GradeBook()
 
+    # Fill in sample data to gradebook
+    populate_gradebook(gbook, data)
+
+    return gbook
+
+
+
+def main():
+
+    # Create sample Data
+    data = create_test_data()
+
+    # ==================== #
+    # --- Database side ---# 
+    # ==================== #
+
+    # Extract Data from setup_database
+    (con, student_repo, course_repo, grade_repo, stats_repo) = setup_database()
+    
+    # Load all extracted data to fill database with sample data
+    load_sample_data(student_repo, course_repo, grade_repo, stats_repo)
+
+    print("\nSQL statistics:")
+    print(stats_repo.average_per_student())
+
+
+
+    # =================== #
+    # --- Python side --- #
+    # =================== #
+
+    gbook = setup_gradebook(data)   
+
+    print("\nPython statistics:")
+    print(gbook.all_student_averages())
+
+
+ 
 
     # Close Connection
     con.close()

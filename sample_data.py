@@ -94,7 +94,7 @@ def populate_gradebook(gbook: GradeBook, data: SampleData) -> None:
 
 def populate_database(student_repo: StudentRepository, course_repo: CourseRepository, grade_repo: GradeRepository, data: SampleData) -> None:
     """
-    Analog to populate_gradebook function. 
+    Adds sample data to database only if it not exists.
     """
 
     for student in data.students.values():

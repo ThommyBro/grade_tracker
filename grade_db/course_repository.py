@@ -21,10 +21,27 @@ class CourseRepository:
                 )
                 """
             )
-
+    def course_exists(self, course_id: str) -> bool:
+            """Checks if course_id is already known"""
+            row = self.conn.execute(
+                """
+                SELECT 1
+                FROM courses
+                WHERE course_id = ?
+                """,
+                (course_id,)
+            ).fetchone()
+            return row is not None
 
     def add(self, course: Course) -> None:
-        """Saves a course object into courses table."""
+        """
+        Saves a course object into courses table.
+        If Course is known it will be skipped.
+        """
+
+        if self.course_exists(course.course_id):
+            return 
+
         with self.conn:
             self.conn.execute(
                 """
