@@ -282,23 +282,23 @@ class GradeBook:
 
 
 ## unnütz?
-    def gradebook_serializer(obj):
-        if isinstance(obj, Student):
-            return {
-                        "_type": "student", 
-                        "student_id": obj.student_id, 
-                        "first_name": obj.first_name, 
-                        "last_name": obj.last_name,
-                        "email": obj.email
-                    }
-        elif isinstance(obj, Course):
-            pass
+    # def gradebook_serializer(obj):
+    #     if isinstance(obj, Student):
+    #         return {
+    #                     "_type": "student", 
+    #                     "student_id": obj.student_id, 
+    #                     "first_name": obj.first_name, 
+    #                     "last_name": obj.last_name,
+    #                     "email": obj.email
+    #                 }
+    #     elif isinstance(obj, Course):
+    #         pass
 
 
-    def student_hook(self, d):
-        if d.get("_type") == "student":
-            return Student(d["student_id"], d["first_name"], d["last_name"], d["email"])
-        return d
+    # def student_hook(self, d):
+    #     if d.get("_type") == "student":
+    #         return Student(d["student_id"], d["first_name"], d["last_name"], d["email"])
+    #     return d
     
 ##################
     
