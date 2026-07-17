@@ -6,13 +6,7 @@ from pathlib import Path
 from grade_management.student import Student 
 from grade_management.course import Course
 
-# ===================================================
-#               Main file
-#
-# start with python3 -m grade_management.grade from Terminal
-# use main()-functionality for tests
-#
-# ===================================================
+
 
 @dataclass
 class Grade():

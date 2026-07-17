@@ -3,13 +3,30 @@ from grade_management.student import Student
 from grade_management.grade import Grade
 from grade_management.gradebook import GradeBook
 
+from grade_db.course_repository import CourseRepository
+from grade_db.student_repository import StudentRepository
+from grade_db.grade_repository import GradeRepository
 
-def create_test_data():
+from dataclasses import dataclass
+
+
+
+# Helperclass; to be returned in create_test_data()
+@dataclass
+class SampleData:
+    students: dict[str, Student]
+    courses: dict[str, Course]
+    grades: list[Grade]
+
+
+
+
+def create_test_data() -> SampleData:
     """
     ...
     """
 
-    # --- create students
+    # --- create students as dict
     students = {
                 "s1": Student("12345","t", "b","some.student@mit.com"),
                 "s2": Student("23456","a", "b","ab@sample.com"),
@@ -21,7 +38,7 @@ def create_test_data():
             }
     
 
-    # --- create courses
+    # --- create courses as dict
     courses = {
                 "c1": Course("101", "QM1"),
                 "c2": Course("102", "Python classics"),
@@ -30,7 +47,7 @@ def create_test_data():
             }
     
 
-    # ---- create grades
+    # ---- create grades as list
     grades = [
                 Grade(students["s1"], courses["c1"], 95, "2026-07-16"),
                 Grade(students["s1"], courses["c2"], 88, "2026-07-17"),
@@ -43,29 +60,30 @@ def create_test_data():
                 Grade(students["s4"], courses["c4"], 100, "2026-07-17")
             ]
     
-    return {
-            "students": students,
-            "courses": courses,
-            "grades": grades,
-            }
-
+    # return SampleData Dataclass
+    return SampleData(
+                students=students,
+                courses=courses,
+                grades=grades
+            )
 
 
 # ---- Helper functions to fill in the data
 
 
-def populate_gradebook(gbook: GradeBook, data: dict) -> None:
+def populate_gradebook(gbook: GradeBook, data: SampleData) -> None:
     """
     Just fills a gradebook with the given data.
+    Uses SampleData Dataclass.
     """
 
-    for student in data["students"].values():
+    for student in data.students.values():
         gbook.add_student(student)
 
-    for course in data["courses"].values():
+    for course in data.courses.values():
         gbook.add_course(course)
 
-    for grade in data["grades"]:
+    for grade in data.grades:
         gbook.record_grade(
             grade.student,
             grade.course,
@@ -74,16 +92,17 @@ def populate_gradebook(gbook: GradeBook, data: dict) -> None:
             grade.notes,
         )
 
-def populate_database(student_repo, course_repo, grade_repo, data: dict) -> None:
+def populate_database(student_repo: StudentRepository, course_repo: CourseRepository, grade_repo: GradeRepository, data: SampleData) -> None:
     """
     Analog to populate_gradebook function. 
     """
 
-    for student in data["students"].values():
+    for student in data.students.values():
         student_repo.add(student)
 
-    for course in data["courses"].values():
+    for course in data.courses.values():
         course_repo.add(course)
 
-    for grade in data["grades"].values():
+    for grade in data.grades:
         grade_repo.add(grade)
+

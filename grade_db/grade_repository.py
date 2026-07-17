@@ -1,13 +1,8 @@
 import sqlite3
 from dataclasses import dataclass
-from grade_management.course import Course
-from grade_management.student import Student
+
 from grade_management.grade import Grade
-from course_repository import CourseRepository
-from student_repository import StudentRepository
-
-
-from connection import create_connection
+from grade_db.connection import create_connection
  
 
 

@@ -591,7 +591,7 @@ def main():
     
     #- read and write csv files
     #print(gbook.get_student_grades(s1))
-    gbook.read_csv_grade('grades.csv')
+    #gbook.read_csv_grade('grades.csv')
     #print(gbook.grades)
     #gbook.export_grade_csv()
     
