@@ -3,6 +3,11 @@ from dataclasses import dataclass
 from grade_management.course import Course
 from grade_management.student import Student
 from grade_management.grade import Grade
+from course_repository import CourseRepository
+from student_repository import StudentRepository
+
+
+from connection import create_connection
  
 
 
@@ -25,27 +30,27 @@ class GradeRepository:
     def create_table(self):
         with self.conn:
             self.conn.execute(
-                """C
-                REATE TABLE IF NOT EXISTS grades(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    student_id TEXT NOT NULL,
-                    course_id TEXT NOT NULL,
-                    score REAL NOT NULL,
-                    date TEXT NOT NULL,
-                    notes TEXT DEFAULT '',
+                """
+                    CREATE TABLE IF NOT EXISTS grades(
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        student_id TEXT NOT NULL,
+                        course_id TEXT NOT NULL,
+                        score REAL NOT NULL,
+                        date TEXT NOT NULL,
+                        notes TEXT DEFAULT NULL,
                     FOREIGN KEY (student_id) REFERENCES students(student_id),
                     FOREIGN KEY (course_id) REFERENCES courses(course_id)
                 )"""
             )
 
 
-    def add(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> None:
+    def add(self, grade: Grade) -> None:
         with self.conn:
             cursor = self.conn.execute(
                 """
                 INSERT INTO grades(
-                    grade.student.student_id, 
-                    grade.course.course_id, 
+                    student_id, 
+                    course_id, 
                     score, 
                     date, 
                     notes
@@ -53,11 +58,11 @@ class GradeRepository:
                 VALUES(?, ?, ?, ?, ?)
                 """,
                 (
-                    student_id, 
-                    course_id, 
-                    score, 
-                    date, 
-                    notes
+                    grade.student.student_id, 
+                    grade.course.course_id, 
+                    grade.score, 
+                    grade.date, 
+                    grade.notes
                 )
             )
         
@@ -149,19 +154,19 @@ def main():
     con = create_connection()
 
     # define all repos
-    #course_repo = CourseRepository(con)
-    #student_repo = StudentRepository(con)
-    #grade_repo = GradeRepository(con)
+    course_repo = CourseRepository(con)
+    student_repo = StudentRepository(con)
+    grade_repo = GradeRepository(con)
 
     # create tables in all repos
-    #course_repo.create_table()
-    #student_repo.create_table()
-    #grade_repo.create_table()
+    course_repo.create_table()
+    student_repo.create_table()
+    grade_repo.create_table()
 
     # Fill in data
-    # course_repo.add("101", "Python 101")
-    # student_repo.add("1", "Thomas", "Brockt", "@me")
-    # grade_repo.add(1,"1", "101", 99.0, "15.07.2026", "Einfach mega der Typ")
+    course_repo.add("101", "Python 101")
+    student_repo.add("1", "Thomas", "Brockt", "@me")
+    grade_repo.add("1", "101", 99.0, "15.07.2026", "Einfach mega der Typ")
 
     # ask for data
     #print(course_repo.get_by_id("102"))
