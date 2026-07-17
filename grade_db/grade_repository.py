@@ -142,37 +142,3 @@ class GradeRepository:
 
 
 
-
-
-def main():
-    # Connection creation:                 
-    con = create_connection()
-
-    # define all repos
-    course_repo = CourseRepository(con)
-    student_repo = StudentRepository(con)
-    grade_repo = GradeRepository(con)
-
-    # create tables in all repos
-    course_repo.create_table()
-    student_repo.create_table()
-    grade_repo.create_table()
-
-    # Fill in data
-    course_repo.add("101", "Python 101")
-    student_repo.add("1", "Thomas", "Brockt", "@me")
-    grade_repo.add("1", "101", 99.0, "15.07.2026", "Einfach mega der Typ")
-
-    # ask for data
-    #print(course_repo.get_by_id("102"))
-    #print(grade_repo.get_by_id(1))
-
-
-
-
-
-
-
-# ---- Check for main file ---- #
-if __name__ == "__main__":
-    main()
