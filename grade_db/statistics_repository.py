@@ -29,16 +29,13 @@ class StatisticsRepository:
             """
             SELECT
                 course_id,
-                COUNT(student_id) AS count
+                COUNT(DISTINCT student_id)
             FROM grades
             GROUP BY course_id
             """
         )
 
-        return {
-            course_id: count
-            for course_id, count in rows
-        }
+        return rows.fetchall()
     
 
     def average_per_student(self):
@@ -75,4 +72,17 @@ class StatisticsRepository:
             student_id: round(avg,2)
             for student_id, avg in rows
             }
+    
+    def max_grade_by_course(self):
+        rows = self.conn.execute(
+            """
+            SELECT
+                course_id,
+                MAX(score)
+            FROM grades
+            GROUP BY course_id
+            """
+        )
+
+        return rows.fetchall()
         
