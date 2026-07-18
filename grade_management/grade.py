@@ -26,7 +26,13 @@ class Grade():
         
     
     def __repr__(self):
-        return f"{self.score}, {self.date}, {self.notes}"
+        return (
+            f"Grade("
+            f"student={self.student.student_id}, "
+            f"course={self.course.course_id}, "
+            f"score={self.score}"
+            f")"
+        )
         
 
     @property

@@ -1,8 +1,13 @@
 import sqlite3
 from dataclasses import dataclass
 
+from grade_management.student import Student
+from grade_management.course import Course
 from grade_management.grade import Grade
-from grade_db.connection import create_connection
+#from grade_db.connection import create_connection
+
+
+
  
 
 
@@ -169,7 +174,7 @@ class GradeRepository:
     def get_by_student(self, student_id: str) -> list[GradeRecord]:
         rows = self.conn.execute(
             """
-                SELECT 
+            SELECT 
                 id,
                 student_id,
                 course_id,
@@ -177,11 +182,219 @@ class GradeRepository:
                 date,
                 notes
                 FROM grades
-                WHERE student_id = ?
+            WHERE student_id = ?
             """,
             (student_id,)
         )
         return [GradeRecord(*row) for row in rows]
+    
+
+    def get_by_course(self, course_id: str) -> list[GradeRecord]:
+        rows = self.conn.execute(
+            """
+            SELECT
+                id,
+                student_id,
+                course_id,
+                score,
+                date,
+                notes
+                FROM grades
+            WHERE course_id = ?
+            """,
+            (course_id,)
+        )
+        return [GradeRecord(*row) for row in rows]
+    
+
+    def get_all_with_details(self) -> list[Grade]:
+
+        rows = self.conn.execute(
+        """
+        SELECT
+            -- Student
+            students.student_id,
+            students.first_name,
+            students.last_name,
+            students.email,
+
+            -- Course
+            courses.course_id,
+            courses.name,
+            courses.max_grade,
+            courses.passing_grade,
+
+            -- Grade
+            grades.score,
+            grades.date,
+            grades.notes
+
+        FROM grades
+        JOIN students
+            ON grades.student_id = students.student_id
+        JOIN courses
+            ON grades.course_id = courses.course_id
+        """
+        )
+
+        grades = []
+
+        for row in rows:
+
+            student = Student(
+                row[0],
+                row[1],
+                row[2],
+                row[3]
+            )
+
+            course = Course(
+                row[4],
+                row[5],
+                row[6],
+                row[7]
+            )
+
+            grade = Grade(
+                student=student,
+                course=course,
+                score=row[8],
+                date=row[9],
+                notes=row[10]
+            )
+
+            grades.append(grade)
+
+        return grades
+    
+
+    def get_by_student_with_details(self, student_id: str) -> list[Grade]:
+
+        rows = self.conn.execute(
+        """
+        SELECT
+            -- Student
+            students.student_id,
+            students.first_name,
+            students.last_name,
+            students.email,
+
+            -- Course
+            courses.course_id,
+            courses.name,
+            courses.max_grade,
+            courses.passing_grade,
+
+            -- Grade
+            grades.score,
+            grades.date,
+            grades.notes
+
+        FROM grades
+        JOIN students
+            ON grades.student_id = students.student_id
+        JOIN courses
+            ON grades.course_id = courses.course_id
+        WHERE grades.student_id = ?
+        """,
+            (student_id,)
+        )
+
+        grades = []
+
+        for row in rows:
+
+            student = Student(
+                row[0],
+                row[1],
+                row[2],
+                row[3]
+            )
+
+            course = Course(
+                row[4],
+                row[5],
+                row[6],
+                row[7]
+            )
+
+            grade = Grade(
+                student=student,
+                course=course,
+                score=row[8],
+                date=row[9],
+                notes=row[10]
+            )
+
+            grades.append(grade)
+
+        return grades
+    
+
+    def get_by_course_with_details(self, course_id: str) -> list[Grade]:
+
+        rows = self.conn.execute(
+        """
+        SELECT
+            -- Student
+            students.student_id,
+            students.first_name,
+            students.last_name,
+            students.email,
+
+            -- Course
+            courses.course_id,
+            courses.name,
+            courses.max_grade,
+            courses.passing_grade,
+
+            -- Grade
+            grades.score,
+            grades.date,
+            grades.notes
+
+        FROM grades
+        JOIN students
+            ON grades.student_id = students.student_id
+        JOIN courses
+            ON grades.course_id = courses.course_id
+        WHERE grades.course_id = ?
+        """,
+            (course_id,)
+        )
+
+        grades = []
+
+        for row in rows:
+
+            student = Student(
+                row[0],
+                row[1],
+                row[2],
+                row[3]
+            )
+
+            course = Course(
+                row[4],
+                row[5],
+                row[6],
+                row[7]
+            )
+
+            grade = Grade(
+                student=student,
+                course=course,
+                score=row[8],
+                date=row[9],
+                notes=row[10]
+            )
+
+            grades.append(grade)
+
+        return grades
+
+    
+
 
 
 
