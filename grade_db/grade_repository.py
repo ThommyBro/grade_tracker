@@ -164,6 +164,24 @@ class GradeRepository:
             )
             if cursor.rowcount == 0:
                 raise ValueError("Graderecord not found")
+            
+
+    def get_by_student(self, student_id: str) -> list[GradeRecord]:
+        rows = self.conn.execute(
+            """
+                SELECT 
+                id,
+                student_id,
+                course_id,
+                score,
+                date,
+                notes
+                FROM grades
+                WHERE student_id = ?
+            """,
+            (student_id,)
+        )
+        return [GradeRecord(*row) for row in rows]
 
 
 
