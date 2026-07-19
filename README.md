@@ -103,3 +103,28 @@ python app.py
 On first startup the database is automatically populated with sample data.
 
 ---
+
+## Dependencies
+
+The project requires the following Python packages:
+
+| Package | Purpose |
+|---------|---------|
+| gradio | Web-based graphical user interface |
+| pytest | Unit testing framework |
+
+The following modules are part of the Python standard library and do not require installation:
+
+- sqlite3
+- dataclasses
+- csv
+- json
+- pathlib
+- re
+- typing
+
+Install the required packages with:
+
+```bash
+pip install gradio pytest
+```
