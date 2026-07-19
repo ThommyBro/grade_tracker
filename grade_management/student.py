@@ -19,15 +19,21 @@ class Student:
     email: str
 
     def __post_init__(self):
-        if not self.first_name  or not self.last_name:  # Firstname and Lastname must not be empty
-            raise ValueError(f"First and Lastname must not be empty!")
-        # First- and Lastname must be string
-        elif not (type(self.first_name) == str and type(self.last_name) == str):
-            raise ValueError(f"Names must be strings!")
-        # email starts with "word characters" followed by '@', followed by "word", then '.', then 2 or 3 "word characters"
-        elif "@" not in self.email:
-            raise ValueError(f"Stundents must have a valid emailaddress! "
-                             f"({self.email})")  
+
+        if not isinstance(self.first_name, str):
+            raise ValueError("First name must be a string")
+
+        if not isinstance(self.last_name, str):
+            raise ValueError("Last name must be a string")
+
+        if not self.first_name:
+            raise ValueError("First name must not be empty")
+
+        if not self.last_name:
+            raise ValueError("Last name must not be empty")
+
+        if not isinstance(self.email, str) or "@" not in self.email:
+            raise ValueError(f"Student must have a valid email address")
         
 
 
