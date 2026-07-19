@@ -1,3 +1,5 @@
+import sqlite3
+
 from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
 from grade_db.grade_repository import GradeRepository
@@ -24,6 +26,7 @@ class SqliteGradeStore(GradeStore):
     
     def add_student(self, student: Student) -> None:
         self.student_repo.add(student)
+        
 
     def add_course(self, course: Course) -> None:
         self.course_repo.add(course)
@@ -110,7 +113,8 @@ class SqliteGradeStore(GradeStore):
         return self.student_repo.update(student)
     
 
-    #def update_grade(self, grade: Grade) -> None:
+    def update_grade(self, grade: Grade) -> None:
+        ...
     #    return self.grade_repo.update(grade)
     # needs handling bc of grade obejcts in grade_repo
 
@@ -123,5 +127,6 @@ class SqliteGradeStore(GradeStore):
         return self.student_repo.delete(student)       
     
     # don't know GradeRecord/Grade
-    #def delete_grade(self, ?) -> None:
+    def delete_grade(self, grade: Grade) -> None:
+        ...
     #    return self.grade_repo.delete(?)
