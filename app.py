@@ -8,10 +8,13 @@ from grade_management.gradebook import GradeBook
 from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
 from grade_db.grade_repository import GradeRepository
+from grade_db.statistics_repository import StatisticsRepository
 
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
+
+from ui.header import build_header
 
 from grade_store.sqlite_store import SqliteGradeStore
 
@@ -38,15 +41,16 @@ def create_sqlite_store():
     student_repo = StudentRepository(con)
     course_repo = CourseRepository(con)
     grade_repo = GradeRepository(con)
+    stats_repo = StatisticsRepository(con)
 
     # Create all tables
     student_repo.create_table()
     course_repo.create_table()
     grade_repo.create_table()
 
-    store = SqliteGradeStore(student_repo, course_repo, grade_repo)
+    store = SqliteGradeStore(student_repo, course_repo, grade_repo, stats_repo)
 
-    return store, student_repo, course_repo, grade_repo
+    return store, student_repo, course_repo, grade_repo, stats_repo
 
 
 
@@ -95,46 +99,6 @@ def load_gradebook(store):
 # Gradio Functions
 # ======================================
 
-def build_header():
-    with gr.Group():
-            with gr.Row(equal_height=True):
-
-                # Logo 
-                with gr.Column(scale=0, min_width=100):
-                    gr.Image(
-                        "images/logo.png",
-                        container=False,
-                        width=65,
-                        height=65,
-                        interactive=False,
-                        buttons=[],
-                        show_label=False
-                    )
-
-                # Title
-                with gr.Column(scale=4):
-                    gr.Markdown(
-                        """
-                        <div style="padding-top: 3px;">
-                            <h1 style="margin-bottom: 0;">
-                                Grade Tracker
-                            </h1>
-                            <p style="margin-top: 0; color: gray;">
-                                Academic Management Dashboard
-                            </p>
-                        </div>
-                        """
-                    )
-
-                # Version Display
-                with gr.Column(scale=1, min_width=150):
-                    gr.Markdown(
-                        """
-                        <div style="text-align:right">
-                        v0.785
-                        </div>
-                        """
-                    )
 
 
 def build_student_tab():
@@ -180,9 +144,14 @@ def build_student_tab():
                     interactive = False
                 )
 
+                update_button = gr.Button(
+                    "Update Student",
+                    variant="secondary",
+                )
+
                 status_message = gr. Markdown(label= "Status")
 
-            # Student overview
+            # Student overview in table and Details below
             with gr.Column(scale=2):
 
                 gr.Markdown("### Student Overview")
@@ -195,7 +164,18 @@ def build_student_tab():
                     ],
                     datatype=["str", "str", "str", "str"],
                     interactive=False,
-                    wrap=True
+                    wrap=True,
+                    buttons=[]
+                )
+
+                gr.Markdown("### Student Details")
+                student_selector = gr.Dropdown(
+                    label="Select Student",
+                    choices=[],
+                )
+
+                student_details = gr.JSON(
+                    label="Details",
                 )
 
         # return dict for better handling later on
@@ -206,7 +186,10 @@ def build_student_tab():
             "email": email,
             "add_button": add_button,
             "status_message": status_message,
-            "student_table": student_table
+            "student_table": student_table,
+            "student_selector": student_selector,
+            "student_details": student_details,
+            "update_button": update_button,
         }
 
 
@@ -221,7 +204,6 @@ def refresh_student_table(store):
     """
 
     students = store.get_all_students()
-
     student_data = []
 
     for student in students:
@@ -233,7 +215,6 @@ def refresh_student_table(store):
                 student.email
             ]
         )
-
     return student_data
 
 
@@ -271,7 +252,6 @@ def add_student(student_id, first_name, last_name, email, store):
     Add new student and return updated UI values for student table.
     """
     SUCCESS_MESSAGE = "✅ Student added successfully"
-
 
     if not student_id.strip():
         return student_form_response(
@@ -311,6 +291,60 @@ def add_student(student_id, first_name, last_name, email, store):
             f"❌ {e}",
             store,
         )
+    
+
+    
+def refresh_student_selector(store):
+    """
+    Update dropdown choices with all students.
+    """
+    students = store.get_all_students()
+    choices = [
+        student.student_id
+        for student in students
+    ]
+    return gr.update(
+        choices=choices
+    )
+
+
+def select_student(student_id, store):
+    """
+    Show selected student's details.
+    """
+    if not student_id:
+        return {}
+
+    student = store.get_student(student_id)
+    if student is None:
+        return {}
+    
+
+    courses = store.get_student_courses(student_id)
+    grades = store.get_student_grades(student_id)
+    average = store.get_student_average(student_id)
+
+    master_data = {
+                    "Student ID": student.student_id,
+                    "Name": f"{student.first_name} {student.last_name}",
+                    "Email": student.email,
+                   }
+
+    return {
+        "Master Data": master_data,
+        "Courses": [
+            course["name"]
+            for course in courses
+        ],
+        "Grades": [
+            {
+                "Course": grade.course.name,
+                "Score": grade.score
+            }
+            for grade in grades
+        ],
+        "Average Grade": average,
+    }
 
 
 
@@ -331,14 +365,18 @@ def get_dashboard_stats(gradebook: GradeBook):
 
 
 
+
+
+
+
 # =======================================================
-# main- Function
+#               MAIN()- Function
 #  -- Gradio Stuff is in here
 # =======================================================
 
 def main():
     # Initializing stuff
-    store, student_repo, course_repo, grade_repo = create_sqlite_store()
+    store, student_repo, course_repo, grade_repo, stats_repo = create_sqlite_store()
     initialize_database(student_repo, course_repo, grade_repo)
 
     gradebook = load_gradebook(store)
@@ -362,100 +400,16 @@ def main():
 
         # --- Tabs for better clicking experience
         with gr.Tabs():
-            
-            # All Students
-            student_ui = build_student_tab()
+            build_dashboard_tab()
+            build_student_tab()
+            build_course_tab()
+            build_grade_tab()
+            build_statistics_tab()
 
-            student_ui["add_button"].click(
-                                        fn=partial(add_student, store=store),
-                                        inputs=[
-                                            student_ui["student_id"],
-                                            student_ui["first_name"],
-                                            student_ui["last_name"],
-                                            student_ui["email"]
-                                        ],
-                                        outputs=[
-                                            student_ui["student_id"],
-                                            student_ui["first_name"],
-                                            student_ui["last_name"],
-                                            student_ui["email"],
-                                            student_ui["status_message"],
-                                            student_ui["student_table"]
-                                        ]
-                                    )
-
-            # Check fields for new Stundent in the UI
-            # if everything is filled 'Add' Button gets active
-            for component in [
-                            student_ui["student_id"],
-                            student_ui["first_name"],
-                            student_ui["last_name"],
-                            student_ui["email"],
-                        ]:
-                            component.change(
-                                fn=validate_student_input,
-                                inputs=[
-                                    student_ui["student_id"],
-                                    student_ui["first_name"],
-                                    student_ui["last_name"],
-                                    student_ui["email"],
-                                ],
-                                outputs=student_ui["add_button"],
-                            )
-
-
-            app.load(
-                    fn=partial(refresh_student_table, store),
-                    inputs= None,
-                    outputs= student_ui["student_table"]
-            )
-
-            # All Courses
-            with gr.Tab("📚 Courses"):
-                gr.Markdown("## Course Management")
-                with gr.Group():
-                    gr.Markdown("### Add new Courses ")
-                    #
-                    #
-                with gr.Group():
-                    gr.Markdown("### Listed Courses")
-                    #
-
-            # All Grades
-            with gr.Tab("📝 Grades"):
-                gr.Markdown("## Grade Management")
-                with gr.Group():
-                    gr.Markdown("### Add Grades")
-                    #
-                    #
-
-                with gr.Group():
-                    gr.Markdown("### Listed Grades")
-                    #
-
-            # All Statistics        
-            with gr.Tab("📊 Statistics"):
-                ...
-
-
-        # --- Buttons
-        refresh = gr.Button("🔄 Load Dashboard")
-
-        refresh.click(
-                        fn = lambda: get_dashboard_stats(gradebook),
-                        #outputs=[students_card, courses_card, grades_card]
-                    )
-        
-
-        with gr.Accordion("Import / Export", open=False):
-            upload = gr.File()
-            export = gr.Button("Export")
 
 
     # start Gradio App
     app.launch(inbrowser=True)
-
-
 
 if __name__ == "__main__":
     main()
