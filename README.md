@@ -60,25 +60,26 @@ grade_tracker/
 The application follows a layered architecture.
 
 ```
-Gradio UI
-      │
-      ▼
-GradeBook
-      │
-      ▼
-GradeStore
-      │
-      ▼
-Repositories
-      │
-      ▼
-SQLite
+           Gradio
+              │
+              ▼
+         GradeStore (ABC)
+              │
+      ┌───────┴────────┐
+      ▼                ▼
+InMemoryStore    SqliteStore
+      │                │
+      ▼                ▼
+ GradeBook       Repositories
+                       │
+                       ▼
+                    SQLite
 ```
 
-The UI communicates with the GradeBook.
-The GradeBook contains the application logic and statistical methods.
+The UI communicates with the GradeStore.
+The GradeBook contains the application logic and statistical methods if one uses only Python side and methdods.
 The GradeStore abstracts the storage backend.
-Repositories encapsulate all SQL operations.
+Repositories encapsulate all SQL operations which also contain statistical methods.
 
 ---
 
