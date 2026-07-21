@@ -4,6 +4,8 @@ from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
 from grade_db.grade_repository import GradeRepository, GradeRecord
 
+from grade_db.statistics_repository import StatisticsRepository
+
 from grade_store.grade_store import GradeStore
 
 from grade_management.student import Student
@@ -17,11 +19,13 @@ class SqliteGradeStore(GradeStore):
             self,
             student_repo: StudentRepository,
             course_repo: CourseRepository,
-            grade_repo: GradeRepository
+            grade_repo: GradeRepository,
+            statistics_repo: StatisticsRepository
         ):
         self.student_repo = student_repo
         self.course_repo = course_repo
         self.grade_repo = grade_repo
+        self.stats_repo = statistics_repo
 
     
     def add_student(self, student: Student) -> None:
@@ -50,57 +54,10 @@ class SqliteGradeStore(GradeStore):
         # New version: Object is build in repo
         return self.grade_repo.get_by_student_with_details(student_id)
     
-    # Old version: Object is build here
-        # student = self.student_repo.get_by_id(student_id)
-        # if student is None:
-        #     return []
-        
-        # records = self.grade_repo.get_by_student(student_id)
-        # grades = []
-        # for record in records:
-        #     course = self.course_repo.get_by_id(record.course_id)
-        #     if course is None:
-        #         raise ValueError(f"Course {record.course_id} not found.")
-
-        #     grade = Grade(
-        #                     student = student,
-        #                     course = course,
-        #                     score = record.score,
-        #                     date = record.date,
-        #                     notes = record.notes
-        #                 )
-        #     grades.append(grade)
-
-        # return grades
-    
-
     def get_course_grades(self, course_id: str) -> list[Grade]:
         # New version: Object is build in repo
         return self.grade_repo.get_by_course_with_details(course_id)
     
-        # Old version
-        # course = self.course_repo.get_by_id(course_id)
-        # if course is None:
-        #     raise ValueError(f"Course {course_id} not found.")
-        
-        # records = self.grade_repo.get_by_course(course_id)
-        # grades = []
-        # for record in records:
-        #     student = self.student_repo.get_by_id(record.student_id)
-        #     if student is None:
-        #         raise ValueError(f"Stundent {record.student_id} not found")
-            
-        #     grade = Grade(
-        #                     student= student,
-        #                     course= course,
-        #                     score= record.score,
-        #                     date= record.date,
-        #                     notes= record.notes
-        #                 )
-        #     grades.append(grade)
-        # return grades
-    
-
     def get_all_grades(self) -> list[Grade]:
         return self.grade_repo.get_all_with_details()
     
@@ -130,13 +87,13 @@ class SqliteGradeStore(GradeStore):
         record = GradeRecord.from_grade(grade)
         self.grade_repo.delete(record)
         
-    #    return self.grade_repo.delete(?)
-        # for index, g in enumerate(?):
-        #         if (
-        #             g.student.student_id == grade.student.student_id
-        #             and g.course.course_id == grade.course.course_id
-        #             and g.date == grade.date
-        #         ):
-        #             self.gradebook.grades[index] = grade
-        #             return
-        #     raise ValueError("Grade not found")
+    # ==========================
+    # Statistical Methods
+    # ==========================
+
+    def get_student_average(self, student_id):
+        return self.stats_repo.average_grade_by_student(student_id)
+
+
+    def get_student_courses(self, student_id):
+        return self.stats_repo.courses_by_student(student_id)
