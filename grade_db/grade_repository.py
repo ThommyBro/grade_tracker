@@ -15,12 +15,23 @@ from grade_management.grade import Grade
 @dataclass
 class GradeRecord:
     """Only to keep repos seperated, so the GradeRepo can return this object."""
-    id: int
     student_id: str
     course_id: str
     score: float
     date: str
     notes: str
+    id: int | None = None
+
+    @classmethod
+    def from_grade(cls, grade: Grade):
+        return cls(
+            id = None,
+            student_id=grade.student.student_id,
+            course_id=grade.course.course_id,
+            score=grade.score,
+            date=grade.date,
+            notes=grade.notes
+        )
 
 # --- Grading --- #
 class GradeRepository:
@@ -137,20 +148,18 @@ class GradeRepository:
                 """
                 UPDATE grades 
                 SET 
-                    student_id = ? ,
-                    course_id = ? ,
                     score = ? ,
-                    date = ? ,
                     notes = ? 
-                WHERE id = ?
+                WHERE student_id = ?
+                AND course_id = ?
+                AND date = ?
                 """,
                 (
-                    graderecord.student_id, 
-                    graderecord.course_id, 
                     graderecord.score, 
-                    graderecord.date, 
                     graderecord.notes,
-                    graderecord.id
+                    graderecord.student_id,
+                    graderecord.course_id,
+                    graderecord.date
                 ),
             )
             if cursor.rowcount == 0:
@@ -324,6 +333,7 @@ class GradeRepository:
                 score=row[8],
                 date=row[9],
                 notes=row[10]
+                
             )
 
             grades.append(grade)
