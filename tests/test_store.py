@@ -89,6 +89,12 @@ def run_store_tests(store: GradeStore, expected: SampleData) -> None:
     assert grades[0].course.course_id == "101"
     assert grades[1].course.course_id == "102"
 
+    grade = grades[0]
+    grade.score = 95.0
+    store.update_grade(grade)
+    updated_grade = store.get_student_grades("12345")[0]
+    assert updated_grade.score == 95.0
+
 
 
 

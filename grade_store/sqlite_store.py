@@ -2,7 +2,7 @@ import sqlite3
 
 from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
-from grade_db.grade_repository import GradeRepository
+from grade_db.grade_repository import GradeRepository, GradeRecord
 
 from grade_store.grade_store import GradeStore
 
@@ -114,9 +114,8 @@ class SqliteGradeStore(GradeStore):
     
 
     def update_grade(self, grade: Grade) -> None:
-        ...
-    #    return self.grade_repo.update(grade)
-    # needs handling bc of grade obejcts in grade_repo
+        record = GradeRecord.from_grade(grade)
+        self.grade_repo.update(record)
 
 
     # --- Deletes --- #
@@ -129,4 +128,14 @@ class SqliteGradeStore(GradeStore):
     # don't know GradeRecord/Grade
     def delete_grade(self, grade: Grade) -> None:
         ...
+        
     #    return self.grade_repo.delete(?)
+        # for index, g in enumerate(?):
+        #         if (
+        #             g.student.student_id == grade.student.student_id
+        #             and g.course.course_id == grade.course.course_id
+        #             and g.date == grade.date
+        #         ):
+        #             self.gradebook.grades[index] = grade
+        #             return
+        #     raise ValueError("Grade not found")
