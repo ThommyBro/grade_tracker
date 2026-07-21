@@ -38,11 +38,11 @@ class StudentRepository:
     def add(self, student: Student) -> None:
         """
         Saves a student object into students table.
-        If Student is known it will be skipped.
+        If Student is known a ValueError will be thrown.
         """
 
         if self.student_exists(student.student_id):
-            return 
+            raise ValueError(f"Student with student ID {student.student_id} already exists.") 
         
         with self.conn:
             self.conn.execute(
