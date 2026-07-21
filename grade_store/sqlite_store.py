@@ -125,9 +125,10 @@ class SqliteGradeStore(GradeStore):
     def delete_student(self, student: Student) -> None:
         return self.student_repo.delete(student)       
     
-    # don't know GradeRecord/Grade
+    
     def delete_grade(self, grade: Grade) -> None:
-        ...
+        record = GradeRecord.from_grade(grade)
+        self.grade_repo.delete(record)
         
     #    return self.grade_repo.delete(?)
         # for index, g in enumerate(?):
