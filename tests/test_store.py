@@ -88,12 +88,23 @@ def run_store_tests(store: GradeStore, expected: SampleData) -> None:
     assert len(grades) == 2
     assert grades[0].course.course_id == "101"
     assert grades[1].course.course_id == "102"
+    
 
+    # Check Grade updates
     grade = grades[0]
-    grade.score = 95.0
+    grade.score = 75.0
     store.update_grade(grade)
     updated_grade = store.get_student_grades("12345")[0]
-    assert updated_grade.score == 95.0
+    assert updated_grade.score == 75.0
+
+    # Check Grades delete
+    grades = store.get_student_grades("12345")
+    assert len(grades) == 2
+    grade_to_delete = grades[0]
+    store.delete_grade(grade_to_delete)
+    grades = store.get_student_grades("12345")
+    assert len(grades) == 1
+    assert grades[0].course.course_id == "102"
 
 
 
