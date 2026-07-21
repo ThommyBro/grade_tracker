@@ -32,7 +32,8 @@ class Grade():
             f"Grade("
             f"student={self.student.student_id}, "
             f"course={self.course.course_id}, "
-            f"score={self.score}"
+            f"score={self.score},"
+            f"date={self.date}"
             f")"
         )
 
