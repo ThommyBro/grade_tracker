@@ -68,6 +68,8 @@ def run_store_tests(store: GradeStore, expected: SampleData) -> None:
     assert len(store.get_all_grades()) == len(expected.grades)
 
     # --- Single object Tests --- #
+
+    # --- students ---
     student = store.get_student("12345")
     assert student is not None
     assert student.first_name == "t"
@@ -79,7 +81,7 @@ def run_store_tests(store: GradeStore, expected: SampleData) -> None:
     print(store.get_all_students())
 
    
-
+    # ---  courses --- #
     course = store.get_course("101")
     assert course is not None
     assert course.name == "QM1"
@@ -90,7 +92,7 @@ def run_store_tests(store: GradeStore, expected: SampleData) -> None:
     assert grades[1].course.course_id == "102"
     
 
-    # Check Grade updates
+    # ---  Grades --- #
     grade = grades[0]
     grade.score = 75.0
     store.update_grade(grade)
