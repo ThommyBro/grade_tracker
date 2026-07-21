@@ -32,6 +32,9 @@ class GradeRecord:
             date=grade.date,
             notes=grade.notes
         )
+    
+    
+    
 
 # --- Grading --- #
 class GradeRepository:
@@ -172,12 +175,17 @@ class GradeRepository:
             cursor = self.conn.execute(
                 """
                 DELETE FROM grades 
-                WHERE id = ?
+                WHERE student_id = ?
+                AND course_id = ?
+                AND date = ?
                 """,
-                (graderecord.id,),
+                (graderecord.student_id,
+                 graderecord.course_id,
+                 graderecord.date),
             )
             if cursor.rowcount == 0:
                 raise ValueError("Graderecord not found")
+        # print(f"Cursor rowcount: {cursor.rowcount}") # just for debugging
             
 
     def get_by_student(self, student_id: str) -> list[GradeRecord]:
