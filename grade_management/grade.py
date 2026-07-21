@@ -3,6 +3,7 @@ import re
 import json
 import csv
 from pathlib import Path
+
 from grade_management.student import Student 
 from grade_management.course import Course
 
@@ -15,6 +16,7 @@ class Grade():
     score: float
     date: str
     notes: str = ""
+    
     
 
     def __post_init__(self):      
@@ -33,8 +35,8 @@ class Grade():
             f"score={self.score}"
             f")"
         )
-        
 
+        
     @property
     def is_passing(self) -> bool:
         if self.score >= self.course.passing_grade:
