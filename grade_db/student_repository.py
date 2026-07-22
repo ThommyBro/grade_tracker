@@ -123,7 +123,7 @@ class StudentRepository:
                 raise ValueError("Student not found")
             
     
-    def delete(self, student: Student) -> None:
+    def delete(self, student_id: str) -> None:
         """Deletes one Student from the database."""
         with self.conn:
             cursor = self.conn.execute(
@@ -131,7 +131,7 @@ class StudentRepository:
                 DELETE FROM students 
                 WHERE student_id = ?
                 """,
-                (student.student_id,),
+                (student_id,),
             )
             if cursor.rowcount == 0:
                 raise ValueError("Student not found")
