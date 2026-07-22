@@ -3,92 +3,9 @@ from grade_management.student import Student
 
 
 
-def refresh_student_table(store):
-    """Reload students for dataframe."""
-    return load_student_table(store)
-
-
-def load_student_table(store):
-    """
-    Load students from store and prepare dataframe data.
-    """
-
-    students = store.get_all_students()
-
-    rows = [
-            [
-                student.student_id,
-                f"{student.first_name} {student.last_name}"
-            ]
-            for student in students
-        ]
-    return rows
-
-
-def select_student_from_table(table, evt, store):
-
-    row = evt.index[0]
-
-    student_id = table.iloc[row, 0]
-
-    student = store.get_student(student_id)
-
-    courses = store.get_student_courses(student_id)
-    average = store.get_student_average(student_id)
-
-    course_text = "\n".join(
-        course["name"]
-        for course in courses
-    )
-
-    student_state = {
-        "student_id": student.student_id,
-        "first_name": student.first_name,
-        "last_name": student.last_name,
-        "email": student.email,
-    }
-
-    return (
-        student_state ["student_id"],
-        student_state ["first_name"],
-        student_state ["last_name"],
-        student_state ["email"],
-        course_text,
-        average,
-        student_state ,
-    )
-
-
-def update_student(student_id, first_name, last_name,email, store):
-    """
-    Save changed student data.
-    """
-
-    try:
-        student = Student(
-            student_id=student_id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-        )
-
-        store.update_student(student)
-
-        return (
-            gr.Info("Student updated successfully"),
-            refresh_student_table(store),
-            gr.update(interactive=False),
-        )
-
-    except Exception as e:
-        return (
-            gr.Error("Student could not be updated"),
-            refresh_student_table(store),
-            gr.update(interactive=True),
-        )
-
-
-
+# =============================================
+# UI
+# =============================================
 
 
 def build_student_tab(store):
@@ -197,3 +114,156 @@ def build_student_tab(store):
 
             "status_message": status_message,
         }
+    
+
+
+# =============================================
+# Helper
+# =============================================
+
+def load_student_table(store):
+    """
+    Load students from store and prepare dataframe data.
+    """
+
+    students = store.get_all_students()
+
+    rows = [
+            [
+                student.student_id,
+                f"{student.first_name} {student.last_name}"
+            ]
+            for student in students
+        ]
+    return rows
+
+
+def refresh_student_table(store):
+    """Reload students for dataframe."""
+    return load_student_table(store)
+
+
+def clear_student_details():
+    """
+    Clear student detail view after delete.
+    """
+    return (
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        {},
+        gr.update(interactive=False),
+    )
+
+
+
+# =============================================
+# Events
+# =============================================
+
+def select_student_from_table(table, evt, store):
+
+    row = evt.index[0]
+
+    student_id = table.iloc[row, 0]
+
+    student = store.get_student(student_id)
+
+    courses = store.get_student_courses(student_id)
+    average = store.get_student_average(student_id)
+
+    course_text = "\n".join(
+        course["name"]
+        for course in courses
+    )
+
+    student_state = {
+        "student_id": student.student_id,
+        "first_name": student.first_name,
+        "last_name": student.last_name,
+        "email": student.email,
+    }
+    #print(student_state)
+    return (
+        student_state ["student_id"],
+        student_state ["first_name"],
+        student_state ["last_name"],
+        student_state ["email"],
+        course_text,
+        average,
+        student_state ,
+    )
+
+
+
+
+def update_student(student_id, first_name, last_name,email, store):
+    """
+    Save changed student data.
+    """
+
+    try:
+        student = Student(
+            student_id=student_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+        )
+
+        store.update_student(student)
+
+        return (
+            gr.Info("Student updated successfully"),
+            refresh_student_table(store),
+            gr.update(interactive=False),
+             {
+                "student_id": student.student_id,
+                "first_name": student.first_name,
+                "last_name": student.last_name,
+                "email": student.email,
+            },
+        )
+
+    except Exception as e:
+        return (
+            gr.Error("Student could not be updated"),
+            refresh_student_table(store),
+            gr.update(interactive=True),
+        )
+
+
+def delete_student(student_state, store):
+
+    if not student_state:
+        gr.Warning("Please select a student first")
+
+        return (
+            "",
+            refresh_student_table(store),
+            {}
+        )
+
+    try:
+        student_id = student_state["student_id"]
+        store.delete_student(student_id)
+        gr.Info("Student deleted successfully")
+
+        return (
+            refresh_student_table(store), 
+            *clear_student_details(),
+        )
+
+    except Exception as e:
+        gr.Error(f"Delete failed: {e}")
+        return (
+            "",
+            refresh_student_table(store), 
+            *clear_student_details(),
+        )
+    
+
+
+
