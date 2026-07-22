@@ -207,6 +207,8 @@ def main():
             outputs=student_ui["save_button"]
         )
 
+
+        # save and update student
         student_ui["save_button"].click(
             fn=partial(
                 update_student,
@@ -222,9 +224,9 @@ def main():
                 student_ui["status_message"],
                 student_ui["student_table"],
                 student_ui["save_button"],
+                student_ui["student_state"],
             ]
         )
-
 
         # --- Check Changes for Save button
         student_ui["student_email_box"].change(
@@ -266,6 +268,25 @@ def main():
             ]
         )
 
+
+    # delete student
+        student_ui["delete_button"].click(
+            fn=partial(delete_student, store=store),
+            inputs=[
+                student_ui["student_state"]
+            ],
+            outputs=[
+                student_ui["student_table"],
+                student_ui["student_id_box"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+                student_ui["student_courses_box"],
+                student_ui["student_average_box"],
+                student_ui["student_state"],
+                student_ui["save_button"],
+            ]
+        )
 
 
     # start Gradio App
