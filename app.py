@@ -15,6 +15,11 @@ from grade_management.course import Course
 from grade_management.grade import Grade
 
 from ui.header import build_header
+from ui.courses import build_course_tab
+from ui.students import *
+from ui.grades import build_grade_tab
+from ui.dashboard import build_dashboard_tab
+from ui.statistics import build_statistics_tab
 
 from grade_store.sqlite_store import SqliteGradeStore
 
@@ -95,274 +100,6 @@ def load_gradebook(store):
 
     return gradebook
 
-# ======================================
-# Gradio Functions
-# ======================================
-
-
-
-def build_student_tab():
-    with gr.Tab("Students"):
-
-        gr.Markdown(
-            """
-            ## Student Management
-
-            Add, view and manage students.
-            """
-        )
-
-        with gr.Row():
-            # Add student form
-            with gr.Column(scale=1):
-                gr.Markdown("### Add Student")
-
-                student_id = gr.Textbox(
-                    label = "Student ID",
-                    placeholder = "Enter a Student ID (e.g. 31415)"
-                )
-
-                first_name = gr.Textbox(
-                    label="First Name",
-                    placeholder="Enter first name"
-                )
-
-                last_name = gr.Textbox(
-                    label="Last Name",
-                    placeholder="Enter last name"
-                )
-
-                email = gr.Textbox(
-                    label="Email",
-                    placeholder="student@example.com"
-                )
-
-                # --- Add Student Button --- #
-                add_button = gr.Button(
-                    "Add Student",
-                    variant = "primary",
-                    interactive = False
-                )
-
-                update_button = gr.Button(
-                    "Update Student",
-                    variant="secondary",
-                )
-
-                status_message = gr. Markdown(label= "Status")
-
-            # Student overview in table and Details below
-            with gr.Column(scale=2):
-
-                gr.Markdown("### Student Overview")
-                student_table = gr.Dataframe(
-                    headers=[
-                        "ID",
-                        "First Name",
-                        "Last Name",
-                        "Email"
-                    ],
-                    datatype=["str", "str", "str", "str"],
-                    interactive=False,
-                    wrap=True,
-                    buttons=[]
-                )
-
-                gr.Markdown("### Student Details")
-                student_selector = gr.Dropdown(
-                    label="Select Student",
-                    choices=[],
-                )
-
-                student_details = gr.JSON(
-                    label="Details",
-                )
-
-        # return dict for better handling later on
-        return {
-            "student_id": student_id,
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "add_button": add_button,
-            "status_message": status_message,
-            "student_table": student_table,
-            "student_selector": student_selector,
-            "student_details": student_details,
-            "update_button": update_button,
-        }
-
-
-
-# --- Student Helper Functions --- # 
-
-
-def refresh_student_table(store):
-    """
-    Load all students from the store (in-memory or SQL) and
-    prepare data for Gradio dataframe.
-    """
-
-    students = store.get_all_students()
-    student_data = []
-
-    for student in students:
-        student_data.append(
-            [
-                student.student_id,
-                student.first_name,
-                student.last_name,
-                student.email
-            ]
-        )
-    return student_data
-
-
-def student_form_response(student_id, first_name, last_name, email, message, store):
-    """
-    Return all UI updates for the student form.
-    """
-    return (
-        student_id,
-        first_name,
-        last_name,
-        email,
-        message,
-        refresh_student_table(store),
-    )
-
-
-def validate_student_input(student_id, first_name, last_name, email):
-    """
-    Enable 'Add Student' - button only if all required fields are filled.
-    """
-    is_valid = all( # all == UND
-        [
-            student_id.strip(),
-            first_name.strip(),
-            last_name.strip(),
-            email.strip(),
-        ]
-    )
-    return gr.update(interactive=is_valid)
-
-
-def add_student(student_id, first_name, last_name, email, store):
-    """
-    Add new student and return updated UI values for student table.
-    """
-    SUCCESS_MESSAGE = "✅ Student added successfully"
-
-    if not student_id.strip():
-        return student_form_response(
-            student_id,
-            first_name,
-            last_name,
-            email,
-            "⚠ Student ID is required.",
-            store,
-        )
-    #...
-    try:
-        student = Student(
-            student_id=student_id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-        )
-
-        store.add_student(student)
-
-        return student_form_response(
-            "",
-            "",
-            "",
-            "",
-            SUCCESS_MESSAGE,
-            store,
-        )
-
-    except Exception as e:
-        return student_form_response(
-            student_id,
-            first_name,
-            last_name,
-            email,
-            f"❌ {e}",
-            store,
-        )
-    
-
-    
-def refresh_student_selector(store):
-    """
-    Update dropdown choices with all students.
-    """
-    students = store.get_all_students()
-    choices = [
-        student.student_id
-        for student in students
-    ]
-    return gr.update(
-        choices=choices
-    )
-
-
-def select_student(student_id, store):
-    """
-    Show selected student's details.
-    """
-    if not student_id:
-        return {}
-
-    student = store.get_student(student_id)
-    if student is None:
-        return {}
-    
-
-    courses = store.get_student_courses(student_id)
-    grades = store.get_student_grades(student_id)
-    average = store.get_student_average(student_id)
-
-    master_data = {
-                    "Student ID": student.student_id,
-                    "Name": f"{student.first_name} {student.last_name}",
-                    "Email": student.email,
-                   }
-
-    return {
-        "Master Data": master_data,
-        "Courses": [
-            course["name"]
-            for course in courses
-        ],
-        "Grades": [
-            {
-                "Course": grade.course.name,
-                "Score": grade.score
-            }
-            for grade in grades
-        ],
-        "Average Grade": average,
-    }
-
-
-
-def show_summary(gradebook: GradeBook):
-    return (
-        f"Students: {len(gradebook.students)}\n"
-        f"Courses: {len(gradebook.courses)}\n"
-        f"Grades: {len(gradebook.grades)}"
-    )
-
-
-def get_dashboard_stats(gradebook: GradeBook):
-    return (
-        f"### 👨‍🎓 Students\n{len(gradebook.students)}",
-        f"### 📚 Courses\n{len(gradebook.courses)}",
-        f"### 📝 Grades\n{len(gradebook.grades)}",
-    )
-
 
 
 
@@ -400,11 +137,134 @@ def main():
 
         # --- Tabs for better clicking experience
         with gr.Tabs():
-            build_dashboard_tab()
-            build_student_tab()
-            build_course_tab()
-            build_grade_tab()
-            build_statistics_tab()
+            build_dahsboard_ui = build_dashboard_tab()
+            student_ui = build_student_tab(store)
+            build_course_ui = build_course_tab()
+            build_grade_ui = build_grade_tab()
+            build_statistics_ui = build_statistics_tab()
+
+
+        # Events
+
+        def on_student_select(table, evt: gr.SelectData):
+            """Fill details card with student informations."""
+            return select_student_from_table(
+                table,
+                evt,
+                store
+            )
+        
+
+        def check_student_changes(original_student, first_name, last_name, email,):
+            """
+            Enable save button only if data changed.
+            """
+            if not original_student:
+                return gr.update(interactive=False)
+
+            changed = (
+                first_name != original_student["first_name"]
+                or
+                last_name != original_student["last_name"]
+                or
+                email != original_student["email"]
+            )
+            return gr.update(interactive=changed)
+
+
+        def enable_save_button():
+            """Enable 'Save' whenever student details are changed."""
+            return gr.update(
+                interactive=True
+            )
+        student_ui["student_table"].select(
+            fn=on_student_select,
+            inputs=[student_ui["student_table"]],
+            outputs=[
+                student_ui["student_id_box"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+                student_ui["student_courses_box"],
+                student_ui["student_average_box"],
+                student_ui["student_state"]
+            ]
+        )
+
+        # emailaddress is changed
+        student_ui["student_email_box"].change(
+            fn=enable_save_button,
+            outputs=student_ui["save_button"]
+        )
+        # first name is changed
+        student_ui["student_first_name_box"].change(
+            fn=enable_save_button,
+            outputs=student_ui["save_button"]
+        )
+        # last name is changed
+        student_ui["student_last_name_box"].change(
+            fn=enable_save_button,
+            outputs=student_ui["save_button"]
+        )
+
+        student_ui["save_button"].click(
+            fn=partial(
+                update_student,
+                store=store
+            ),
+            inputs=[
+                student_ui["student_id_box"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+            ],
+            outputs=[
+                student_ui["status_message"],
+                student_ui["student_table"],
+                student_ui["save_button"],
+            ]
+        )
+
+
+        # --- Check Changes for Save button
+        student_ui["student_email_box"].change(
+            fn=check_student_changes,
+            inputs=[
+                student_ui["student_state"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+            ],
+            outputs=[
+                student_ui["save_button"]
+            ]
+        )
+
+        student_ui["student_first_name_box"].change(
+            fn=check_student_changes,
+            inputs=[
+                student_ui["student_state"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+            ],
+            outputs=[
+                student_ui["save_button"]
+            ]
+        )
+
+        student_ui["student_last_name_box"].change(
+            fn=check_student_changes,
+            inputs=[
+                student_ui["student_state"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+            ],
+            outputs=[
+                student_ui["save_button"]
+            ]
+        )
 
 
 
