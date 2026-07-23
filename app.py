@@ -155,21 +155,7 @@ def main():
             )
         
 
-        def check_student_changes(original_student, first_name, last_name, email,):
-            """
-            Enable save button only if data changed.
-            """
-            if not original_student:
-                return gr.update(interactive=False)
-
-            changed = (
-                first_name != original_student["first_name"]
-                or
-                last_name != original_student["last_name"]
-                or
-                email != original_student["email"]
-            )
-            return gr.update(interactive=changed)
+        
 
 
         def enable_save_button():
@@ -177,17 +163,29 @@ def main():
             return gr.update(
                 interactive=True
             )
+        
+
+#------------- View ------------------#
+
+
         student_ui["student_table"].select(
-            fn=on_student_select,
-            inputs=[student_ui["student_table"]],
+            fn= on_student_select,
+            inputs=[
+                student_ui["student_table"]
+            ],
             outputs=[
+                student_ui["student_title"],
                 student_ui["student_id_box"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
                 student_ui["student_email_box"],
                 student_ui["student_courses_box"],
                 student_ui["student_average_box"],
-                student_ui["student_state"]
+                student_ui["student_state"],
+                student_ui["mode_state"],
+                student_ui["save_button"],
+                student_ui["delete_button"],
+                student_ui["cancel_button"],
             ]
         )
 
@@ -208,30 +206,43 @@ def main():
         )
 
 
-        # save and update student
+  # save and update student
         student_ui["save_button"].click(
             fn=partial(
-                update_student,
+                save_student,
                 store=store
             ),
             inputs=[
+                student_ui["mode_state"],
+                student_ui["student_state"],
                 student_ui["student_id_box"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
                 student_ui["student_email_box"],
             ],
             outputs=[
-                student_ui["status_message"],
-                student_ui["student_table"],
-                student_ui["save_button"],
-                student_ui["student_state"],
+                student_ui["student_table"],            # 1
+                student_ui["student_title"],            # 2
+                student_ui["student_id_box"],           # 3
+                student_ui["student_first_name_box"],   # 4
+                student_ui["student_last_name_box"],    # 5
+                student_ui["student_email_box"],        # 6
+                student_ui["student_courses_box"],      # 7
+                student_ui["student_average_box"],      # 8
+                student_ui["student_state"],            # 9
+                student_ui["mode_state"],               # 10
+                student_ui["save_button"],              # 11
+                student_ui["delete_button"],            # 12
+                student_ui["cancel_button"],            # 13
             ]
         )
+
 
         # --- Check Changes for Save button
         student_ui["student_email_box"].change(
             fn=check_student_changes,
             inputs=[
+                student_ui["mode_state"],
                 student_ui["student_state"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
@@ -244,7 +255,7 @@ def main():
 
         student_ui["student_first_name_box"].change(
             fn=check_student_changes,
-            inputs=[
+            inputs=[student_ui["mode_state"],
                 student_ui["student_state"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
@@ -258,6 +269,7 @@ def main():
         student_ui["student_last_name_box"].change(
             fn=check_student_changes,
             inputs=[
+                student_ui["mode_state"],
                 student_ui["student_state"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
@@ -275,8 +287,35 @@ def main():
             inputs=[
                 student_ui["student_state"]
             ],
+             outputs=[
+                student_ui["student_table"],            # 1
+
+                student_ui["student_title"],            # 2
+                
+                student_ui["student_id_box"],           # 3
+                student_ui["student_first_name_box"],   # 4
+                student_ui["student_last_name_box"],    # 5
+                student_ui["student_email_box"],        # 6
+
+                student_ui["student_courses_box"],      # 7
+                student_ui["student_average_box"],      # 8
+
+                student_ui["student_state"],            # 9
+                student_ui["mode_state"],               # 10
+
+                student_ui["save_button"],              # 11
+                student_ui["delete_button"],            # 12
+                student_ui["cancel_button"],            # 13
+            ]
+        )
+
+        # add student
+        student_ui["add_button"].click(
+            fn=lambda: render_student_details(
+                "create"
+            ),
             outputs=[
-                student_ui["student_table"],
+                student_ui["student_title"],
                 student_ui["student_id_box"],
                 student_ui["student_first_name_box"],
                 student_ui["student_last_name_box"],
@@ -284,7 +323,30 @@ def main():
                 student_ui["student_courses_box"],
                 student_ui["student_average_box"],
                 student_ui["student_state"],
+                student_ui["mode_state"],
                 student_ui["save_button"],
+                student_ui["delete_button"],
+                student_ui["cancel_button"],
+            ]
+        )
+
+        student_ui["cancel_button"].click(
+            fn=lambda: render_student_details(
+                "empty"
+            ),
+            outputs=[
+                student_ui["student_title"],
+                student_ui["student_id_box"],
+                student_ui["student_first_name_box"],
+                student_ui["student_last_name_box"],
+                student_ui["student_email_box"],
+                student_ui["student_courses_box"],
+                student_ui["student_average_box"],
+                student_ui["student_state"],
+                student_ui["mode_state"],
+                student_ui["save_button"],
+                student_ui["delete_button"],
+                student_ui["cancel_button"],
             ]
         )
 
