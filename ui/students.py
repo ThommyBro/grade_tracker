@@ -295,15 +295,25 @@ def check_student_changes(
     """
     Enable save/create button only if data changed.
     """
+    print(
+        "CHECK CHANGES:",
+        mode_state,
+        first_name,
+        last_name,
+        email
+    )
+
+    # Empty view
+    if mode_state == "empty":
+        return gr.update(interactive=False)
+    
     # Create mode
     if mode_state == "create":
-
-        changed = (
-            first_name.strip() != ""
-            or last_name.strip() != ""
-            or email.strip() != ""
-        )
-
+        changed = any([
+            first_name.strip(),
+            last_name.strip(),
+            email.strip()
+        ])
         return gr.update(interactive=changed)
 
     # Edit mode
@@ -321,6 +331,7 @@ def check_student_changes(
         return gr.update(interactive=changed)
     # Empty state
     return gr.update(interactive=False)
+
 
 
 def clear_student_details():
@@ -374,61 +385,54 @@ def select_student_from_table(table, evt: gr.SelectData, store):
 
 
         
-def create_student(student_id, first_name, last_name, email, store):
+def create_student(
+    student_id,
+    first_name,
+    last_name,
+    email,
+    store,
+):
     """
-    Create a new student and update UI state.
+    Create a new student and switch to edit mode afterwards.
     """
-
+    print("CREATE STUDENT DEBUG")
+    print(student_id, first_name, last_name, email)
     try:
         student = Student(
             student_id=student_id,
             first_name=first_name,
             last_name=last_name,
-            email=email
+            email=email,
         )
 
         store.add_student(student)
-
-        student_state = {
-            "student_id": student.student_id,
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "email": student.email,
-        }
-
-        gr.Info("Student created successfully")
-
-        return (
-            refresh_student_table(store),     # student_table
-
-            student.student_id,                # ID
-            student.first_name,                # First name
-            student.last_name,                 # Last name
-            student.email,                     # Email
-
-            "",                               # Courses
-            "",                               # Average
-
-            student_state,                     # student_state
-            "edit",                            # mode_state
-
-            gr.update(
-                value="💾 Save Changes",
-                interactive=False
-            ),
-
-            gr.update(
-                visible=True
-            ),
-
-            gr.update(
-                visible=False
-            ),
+        print("AFTER ADD:")
+        print(store.get_all_students())
+        gr.Info(
+            "Student created successfully"
         )
 
+        return (
+            refresh_student_table(store),
+            *render_student_details(
+                "edit",
+                student,
+                store
+            )
+        )
     except Exception as e:
-        raise e
-
+        gr.Warning(
+            f"Student could not be created: {e}"
+        )
+        # wieder Create View anzeigen
+        return (
+            refresh_student_table(store),
+            *render_student_details(
+                "create",
+                None,
+                store
+            )
+        )
 
 
 
@@ -494,9 +498,9 @@ def update_student(
     """
     Update an existing student.
     """
-    print("UPDATE DEBUG")
-    print(student_state)
-    print(first_name, last_name, email)
+    # print("UPDATE DEBUG")
+    # print(student_state)
+    # print(first_name, last_name, email)
     try:
 
         student = Student(

@@ -239,7 +239,7 @@ def main():
 
 
         # --- Check Changes for Save button
-        student_ui["student_email_box"].change(
+        student_ui["student_email_box"].input(
             fn=check_student_changes,
             inputs=[
                 student_ui["mode_state"],
@@ -253,7 +253,7 @@ def main():
             ]
         )
 
-        student_ui["student_first_name_box"].change(
+        student_ui["student_first_name_box"].input(
             fn=check_student_changes,
             inputs=[student_ui["mode_state"],
                 student_ui["student_state"],
@@ -266,7 +266,7 @@ def main():
             ]
         )
 
-        student_ui["student_last_name_box"].change(
+        student_ui["student_last_name_box"].input(
             fn=check_student_changes,
             inputs=[
                 student_ui["mode_state"],
@@ -291,7 +291,7 @@ def main():
                 student_ui["student_table"],            # 1
 
                 student_ui["student_title"],            # 2
-                
+
                 student_ui["student_id_box"],           # 3
                 student_ui["student_first_name_box"],   # 4
                 student_ui["student_last_name_box"],    # 5
