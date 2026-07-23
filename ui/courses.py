@@ -28,6 +28,18 @@ def refresh_course_table(store):
     return load_course_table(store)
 
 
+def select_course_from_table( table, evt: gr.SelectData, store,):
+    row = evt.index[0]
+    course_id = table.iloc[row]["ID"]
+    course = store.get_course(course_id)
+
+    return render_course_details(
+        "edit",
+        course,
+        store,
+    )
+
+
 # ============================================================
 # Views
 # ============================================================
@@ -40,9 +52,9 @@ def empty_course_view():
         "title": "### Course Details",
 
         "course_id": "",
-        "name": "",
-        "max_grade": "",
-        "passing_grade": "",
+        "course_name": "",
+        "course_max_grade": "",
+        "course_passing_grade": "",
 
         "course_state": {},
         "mode_state": "empty",
@@ -70,10 +82,22 @@ def create_course_view():
     return {
         "title": "### New Course",
 
-        "course_id": "",
-        "name": "",
-        "max_grade": 100,
-        "passing_grade": 50,
+        "course_id": gr.update(
+            value = "",
+            interactive=True
+        ),
+        "course_name": gr.update(
+            value="",
+            interactive=True
+        ),
+        "course_max_grade": gr.update(
+            value=100,
+            interactive=True
+        ),
+        "course_passing_grade": gr.update(
+            value = 50,
+            interactive = True
+        ),
 
         "course_state": {},
         "mode_state": "create",
@@ -92,41 +116,41 @@ def create_course_view():
         ),
     }
 
+# first draft
+# def populate_course_view(course):
+#     """
+#     Populate detail card with selected course Details
+#     """
+#     return {
+#         "title": "### Course Details",
 
-def populate_course_view(course):
-    """
-    Populate detail card with selected course Details
-    """
-    return {
-        "title": "### Course Details",
+#         "course_id": course.course_id,
+#         "course_name": course.name,
+#         "course_max_grade": course.max_grade,
+#         "course_passing_grade": course.passing_grade,
 
-        "course_id": course.course_id,
-        "name": course.name,
-        "max_grade": course.max_grade,
-        "passing_grade": course.passing_grade,
+#         "course_state": {
+#             "course_id": course.course_id,
+#             "course_name": course.name,
+#             "course_max_grade": course.max_grade,
+#             "course_passing_grade": course.passing_grade,
+#         },
 
-        "course_state": {
-            "course_id": course.course_id,
-            "name": course.name,
-            "max_grade": course.max_grade,
-            "passing_grade": course.passing_grade,
-        },
+#         "mode_state": "edit",
 
-        "mode_state": "edit",
+#         "save_button": gr.update(
+#             value="💾 Save Changes",
+#             interactive=False
+#         ),
 
-        "save_button": gr.update(
-            value="💾 Save Changes",
-            interactive=False
-        ),
+#         "delete_button": gr.update(
+#             visible=True
+#         ),
 
-        "delete_button": gr.update(
-            visible=True
-        ),
-
-        "cancel_button": gr.update(
-            visible=True
-        ),
-    }
+#         "cancel_button": gr.update(
+#             visible=True
+#         ),
+#     }
 
 
 def course_view_to_output(view):
@@ -137,9 +161,9 @@ def course_view_to_output(view):
     return (
         view["title"],
         view["course_id"],
-        view["name"],
-        view["max_grade"],
-        view["passing_grade"],
+        view["course_name"],
+        view["course_max_grade"],
+        view["course_passing_grade"],
 
         view["course_state"],
         view["mode_state"],
@@ -148,6 +172,7 @@ def course_view_to_output(view):
         view["delete_button"],
         view["cancel_button"],
     )
+
 
 def render_course_details(mode, course=None, store=None,):
     """
@@ -161,7 +186,7 @@ def render_course_details(mode, course=None, store=None,):
         if course is None:
             view = empty_course_view()
         else:
-            view = populate_course_view(course)
+            view = populate_course_view(course, store)
     else:
         view = empty_course_view()
 
@@ -175,71 +200,65 @@ def render_course_details(mode, course=None, store=None,):
 def check_course_changes(
     mode_state,
     original_course,
-    name,
-    max_grade,
-    passing_grade,
+    course_name,
+    course_max_grade,
+    course_passing_grade,
 ):
     """
     Enable save button only when data changed.
     """
 
+    print("CHECK COURSE")
+    print(mode_state)
+    print(original_course)
+    print(course_name)
+    print(course_max_grade)
+    print(course_passing_grade)
     # empty state
     if mode_state == "empty":
-
+        print("Mode: Empty")
         return gr.update(
             interactive=False
         )
-
-
     # create mode
     if mode_state == "create":
-
-        changed = any(
-            [
-                name.strip(),
-                max_grade,
-                passing_grade
-            ]
-        )
+    #     print("Mode: Create")
+    #     changed = any(
+    #         [
+    #             course_name.strip(),
+    #             course_max_grade,
+    #             course_passing_grade
+    #         ]
+    #     )
 
         return gr.update(
-            interactive=changed
+            interactive=True
         )
-
 
     # edit mode
     if mode_state == "edit":
-
+        print("Mode: Edit")
         if not original_course:
-
+            print("Mode: Edit but original")
             return gr.update(
                 interactive=False
             )
-
-
+        print("COMPARE:")
+        print(course_name, original_course["course_name"])
+        print(course_max_grade, original_course["course_max_grade"])
+        print(course_passing_grade, original_course["course_passing_grade"])
         changed = (
-
-            name != original_course["name"]
-
+            course_name != original_course["course_name"]
             or
-
-            max_grade != original_course["max_grade"]
-
+            course_max_grade != original_course["course_max_grade"]
             or
-
-            passing_grade != original_course["passing_grade"]
+            course_passing_grade != original_course["course_passing_grade"]
 
         )
-
-
-        return gr.update(
-            interactive=changed
-        )
-
-
-    return gr.update(
-        interactive=False
-    )
+        print("CHANGED:", changed)
+        return gr.update(interactive=changed)
+    print("No changes")
+    return gr.update(interactive=False)
 
 
 
@@ -251,39 +270,33 @@ def save_course(
     mode_state,
     course_state,
     course_id,
-    name,
-    max_grade,
-    passing_grade,
+    course_name,
+    course_max_grade,
+    course_passing_grade,
     store,
 ):
     """
     Decide between create and update.
     """
-
     if mode_state == "create":
-
         return create_course(
-            course_id,
-            name,
-            max_grade,
-            passing_grade,
-            store,
-        )
-
-
+                    course_id,
+                    course_name,
+                    course_max_grade,
+                    course_passing_grade,
+                    store,
+                )
+            
     elif mode_state == "edit":
-
         return update_course(
             course_state,
-            name,
-            max_grade,
-            passing_grade,
+            course_name,
+            course_max_grade,
+            course_passing_grade,
             store,
         )
 
-
     else:
-
         gr.Warning(
             "No action available"
         )
@@ -301,9 +314,9 @@ def save_course(
 
 def create_course(
     course_id,
-    name,
-    max_grade,
-    passing_grade,
+    course_name,
+    course_max_grade,
+    course_passing_grade,
     store,
 ):
     """
@@ -312,22 +325,31 @@ def create_course(
     try:
         course = Course(
             course_id=course_id,
-            name=name,
-            max_grade=max_grade,
-            passing_grade=passing_grade,
+            name=str(course_name),
+            max_grade=float(course_max_grade),
+            passing_grade=float(course_passing_grade),
         )
         store.add_course(course)
+       
+        table = refresh_course_table(store)
+
+        result = render_course_details("edit", course, store)
+
+        print(f"DETAIL OUTPUT LENGTH: {len(result)}")
+        print("RETURN TABLE")
+        print(table)
+
         gr.Info(
             "Course created successfully"
         )
         return (
-            refresh_course_table(store),
-            *render_course_details(
-                "edit",
-                course,
-                store
-            )
-        )
+                table,
+                *render_course_details(
+                        "edit",
+                        course,
+                        store
+                    )
+                )
     except Exception as e:
         gr.Warning(
             f"Course could not be created: {e}"
@@ -350,9 +372,9 @@ def update_course(course_state, name, max_grade, passing_grade, store,):
     try:
         course = Course(
             course_id=course_state["course_id"],
-            name=name,
-            max_grade=max_grade,
-            passing_grade=passing_grade,
+            name=str(name),
+            max_grade=float(max_grade),
+            passing_grade=float(passing_grade),
         )
         store.update_course(course)
         gr.Info(
@@ -361,7 +383,7 @@ def update_course(course_state, name, max_grade, passing_grade, store,):
         return (
             refresh_course_table(store),
             *render_course_details(
-                "edit",
+                "empty",
                 course,
                 store
             )
@@ -372,9 +394,9 @@ def update_course(course_state, name, max_grade, passing_grade, store,):
         )
         old_course = Course(
             course_id=course_state["course_id"],
-            name=course_state["name"],
-            max_grade=course_state["max_grade"],
-            passing_grade=course_state["passing_grade"],
+            name=course_state["course_name"],
+            max_grade=course_state["course_max_grade"],
+            passing_grade=course_state["course_passing_grade"],
         )
         return (
             refresh_course_table(store),
@@ -392,6 +414,7 @@ def delete_course(course_state, store,):
     """
     Delete selected course.
     """
+    print(f"Delete Course State: {course_state}")
     if not course_state:
         gr.Warning(
             "Please select a course first"
@@ -404,11 +427,31 @@ def delete_course(course_state, store,):
                 store
             )
         )
+    course = Course(
+                    course_id=course_state["course_id"],
+                    name=course_state["course_name"],
+                    max_grade=course_state["course_max_grade"],
+                    passing_grade=course_state["course_passing_grade"],
+                )
     try:
-        course_id = course_state["course_id"]
-        store.delete_course(
-            course_id
-        )
+        # Check dependencies
+        grades = store.get_course_grades(course.course_id)
+
+        if grades:
+            gr.Warning(
+                "Course cannot be deleted because grades exist."
+            )
+
+            return (
+                refresh_course_table(store),
+                *render_course_details(
+                    "edit",
+                    course,
+                    store
+                )
+            )
+       
+        store.delete_course(course) 
         gr.Info(
             "Course deleted successfully"
         )
@@ -420,18 +463,14 @@ def delete_course(course_state, store,):
                 store
             )
         )
-
-
+    
     except Exception as e:
-        gr.Warning(
-            f"Delete failed: {e}"
-        )
-
+        gr.Warning(f"Delete failed: {e}")
         return (
             refresh_course_table(store),
             *render_course_details(
-                "empty",
-                None,
+                "edit",
+                course,
                 store
             )
         )
@@ -445,11 +484,9 @@ def delete_course(course_state, store,):
 def build_course_tab(store):
     
     # state definition
-    course_state = gr.State(value=[])
+    course_state = gr.State(value={})
     mode_state = gr.State(value="empty")
     
-
-
     with gr.Tab("Courses"):
         # Header row
         with gr.Row():
@@ -547,3 +584,55 @@ def build_course_tab(store):
 
             "status_message": status_message,
         }
+    
+
+
+
+
+def populate_course_view(course: Course, store):
+
+    course_state = {
+        "course_id": course.course_id,
+        "course_name": course.name,
+        "course_max_grade": course.max_grade,
+        "course_passing_grade": course.passing_grade,
+    }
+    return {
+        "title": "### Course Details",
+
+        "course_id": gr.update(
+            value=course.course_id,
+            interactive=False,
+        ),
+
+        "course_name": gr.update(
+            value=course.name,
+            interactive=True,
+        ),
+
+        "course_max_grade": gr.update(
+            value=course.max_grade,
+            interactive=True,
+        ),
+
+        "course_passing_grade": gr.update(
+            value=course.passing_grade,
+            interactive=True,
+        ),
+
+        "course_state": course_state,
+        "mode_state": "edit",
+
+        "save_button": gr.update(
+            value="💾 Save Changes",
+            interactive=False,
+        ),
+
+        "delete_button": gr.update(
+            visible=True,
+        ),
+
+        "cancel_button": gr.update(
+            visible=True,
+        ),
+    }

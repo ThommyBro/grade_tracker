@@ -155,16 +155,16 @@ def main():
                 store
             )
         
+
+
         def on_course_select(table, evt: gr.SelectData):
-            """Fill details with course information."""
-            row = evt.index[0]
-            course_id = table.iloc[row]["ID"]
-            course = store.get_course(course_id)
-            return render_course_details(
-                "edit",
-                course,
-                store
+            """Fill details card with course informations."""
+            return select_course_from_table(
+                table,
+                evt,
+                store,
             )
+      
 
         
 
@@ -400,6 +400,7 @@ def main():
             inputs=[
                 course_ui["mode_state"],
                 course_ui["course_state"],
+                
                 course_ui["course_id_box"],
                 course_ui["course_name_box"],
                 course_ui["course_max_grade_box"],
@@ -421,115 +422,121 @@ def main():
         )
 
 
-        # # --- Check Changes for Save button
-        # course_ui["course_name_box"].input(
-        #     fn=check_course_changes,
-        #     inputs=[
-        #         student_ui["course_state"],
-        #         student_ui["mode_state"],
-        #         student_ui["course_name_box"],
-        #         student_ui["course_max_grade_box"],
-        #         student_ui["course_passing_grade_box"],
-        #     ],
-        #     outputs=[
-        #         student_ui["save_button"]
-        #     ]
-        # )
+        # --- Check Changes for Save button
+        course_ui["course_name_box"].input(
+            fn=check_course_changes,
+            inputs=[
+                course_ui["mode_state"],
+                course_ui["course_state"],
+                
+                course_ui["course_name_box"],
+                course_ui["course_max_grade_box"],
+                course_ui["course_passing_grade_box"],
+            ],
+            outputs=[
+                course_ui["save_button"]
+            ]
+        )
 
-        # course_ui["course_max_grade_box"].input(
-        #     fn=check_course_changes,
-        #     inputs=[
-        #         student_ui["course_state"],
-        #         student_ui["mode_state"],
-        #         student_ui["course_name_box"],
-        #         student_ui["course_max_grade_box"],
-        #         student_ui["course_passing_grade_box"],
-        #     ],
-        #     outputs=[
-        #         student_ui["save_button"]
-        #     ]
-        # )
+        course_ui["course_max_grade_box"].input(
+            fn=check_course_changes,
+            inputs=[
+                course_ui["mode_state"],
+                course_ui["course_state"],
+                
+                course_ui["course_name_box"],
+                course_ui["course_max_grade_box"],
+                course_ui["course_passing_grade_box"],
+            ],
+            outputs=[
+                course_ui["save_button"]
+            ]
+        )
 
-        # course_ui["course_passing_grade_box"].input(
-        #     fn=check_course_changes,
-        #     inputs=[
-        #         student_ui["course_state"],
-        #         student_ui["mode_state"],
-        #         student_ui["course_name_box"],
-        #         student_ui["course_max_grade_box"],
-        #         student_ui["course_passing_grade_box"],
-        #     ],
-        #     outputs=[
-        #         student_ui["save_button"]
-        #     ]
-        # )
-
-
-        # # delete course
-        # course_ui["delete_button"].click(
-        #     fn=partial(delete_course, store=store),
-        #     inputs=[
-        #         course_ui["course_state"]
-        #     ],
-        #     outputs=[
-        #         course_ui["course_table"],               # 1
-
-        #         course_ui["course_title"],               # 2
-
-        #         course_ui["course_name_box"],            # 3
-        #         course_ui["course_max_grade_box"],       # 4
-        #         student_ui["course_passing_grade_box"],  # 5
-
-        #         student_ui["course_state"],              # 6
-        #         student_ui["mode_state"],                # 7
-
-        #         student_ui["save_button"],              # 8
-        #         student_ui["delete_button"],            # 9
-        #         student_ui["cancel_button"],            # 10
-        #     ]
-        # )
-
-        # # add course
-        # course_ui["add_button"].click(
-        #     fn=lambda: render_course_details(
-        #         "create"
-        #     ),
-        #     outputs=[
-        #         course_ui["course_title"],               # 2
-
-        #         course_ui["course_name_box"],            # 3
-        #         course_ui["course_max_grade_box"],       # 4
-        #         student_ui["course_passing_grade_box"],  # 5
-
-        #         student_ui["course_state"],              # 6
-        #         student_ui["mode_state"],                # 7
-
-        #         student_ui["save_button"],              # 8
-        #         student_ui["delete_button"],            # 9
-        #         student_ui["cancel_button"],            # 10
-        #     ]
-        # )
+        course_ui["course_passing_grade_box"].input(
+            fn=check_course_changes,
+            inputs=[
+                course_ui["mode_state"],
+                course_ui["course_state"],
+                
+                course_ui["course_name_box"],
+                course_ui["course_max_grade_box"],
+                course_ui["course_passing_grade_box"],
+            ],
+            outputs=[
+                course_ui["save_button"]
+            ]
+        )
 
 
-        # course_ui["cancel_button"].click(
-        #     fn=lambda: render_course_details(
-        #         "empty"
-        #     ),
-        #     outputs=[
-        #         course_ui["course_title"],               # 2
+        # delete course
+        course_ui["delete_button"].click(
+            fn=partial(delete_course, store=store),
+            inputs=[
+                course_ui["course_state"]
+            ],
+            outputs=[
+                course_ui["course_table"],               # 1
 
-        #         course_ui["course_name_box"],            # 3
-        #         course_ui["course_max_grade_box"],       # 4
-        #         student_ui["course_passing_grade_box"],  # 5
+                course_ui["course_title"],               # 2
 
-        #         student_ui["course_state"],              # 6
-        #         student_ui["mode_state"],                # 7
+                course_ui["course_id_box"],
+                course_ui["course_name_box"],            # 3
+                course_ui["course_max_grade_box"],       # 4
+                course_ui["course_passing_grade_box"],  # 5
 
-        #         student_ui["save_button"],              # 8
-        #         student_ui["delete_button"],            # 9
-        #         student_ui["cancel_button"],            # 10
-        #     ]
-        # )
+                course_ui["course_state"],              # 6
+                course_ui["mode_state"],                # 7
+
+                
+                course_ui["save_button"],              # 8
+                course_ui["delete_button"],            # 9
+                course_ui["cancel_button"],            # 10
+            ]
+        )
+
+        # add course
+        course_ui["add_button"].click(
+            fn=lambda: render_course_details(
+                "create"
+            ),
+            outputs=[
+                course_ui["course_title"],               # 2
+
+                course_ui["course_id_box"],
+                course_ui["course_name_box"],            # 3
+                course_ui["course_max_grade_box"],       # 4
+                course_ui["course_passing_grade_box"],  # 5
+
+                course_ui["course_state"],              # 6
+                course_ui["mode_state"],                # 7
+
+                course_ui["save_button"],              # 8
+                course_ui["delete_button"],            # 9
+                course_ui["cancel_button"],            # 10
+            ]
+        )
+
+
+        course_ui["cancel_button"].click(
+            fn=lambda: render_course_details(
+                "empty"
+            ),
+            outputs=[
+                course_ui["course_title"],               # 2
+                course_ui["course_id_box"],
+                course_ui["course_name_box"],            # 3
+                course_ui["course_max_grade_box"],       # 4
+                course_ui["course_passing_grade_box"],  # 5
+
+                course_ui["course_state"],              # 6
+                course_ui["mode_state"],                # 7
+
+                course_ui["save_button"],              # 8
+                course_ui["delete_button"],            # 9
+                course_ui["cancel_button"],            # 10
+            ]
+        )
 
 
     # start Gradio App
