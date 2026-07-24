@@ -16,6 +16,7 @@ class Grade():
     score: float
     date: str
     notes: str = ""
+    id: int | None = None # new 24.07.26 for gradio list view
     
     
 
