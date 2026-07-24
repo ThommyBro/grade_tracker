@@ -244,7 +244,8 @@ class GradeRepository:
             -- Grade
             grades.score,
             grades.date,
-            grades.notes
+            grades.notes,
+            grades.id
 
         FROM grades
         JOIN students
@@ -277,7 +278,8 @@ class GradeRepository:
                 course=course,
                 score=row[8],
                 date=row[9],
-                notes=row[10]
+                notes=row[10],
+                id=row[11]
             )
 
             grades.append(grade)
