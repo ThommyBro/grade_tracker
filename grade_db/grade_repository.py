@@ -127,6 +127,69 @@ class GradeRepository:
         if row is None:
             return None
         return GradeRecord(*row)
+    
+
+    def get_grade_by_id(self, grade_id: int) -> Grade | None:
+
+        row = self.conn.execute(
+            """
+            SELECT
+                -- Student
+                students.student_id,
+                students.first_name,
+                students.last_name,
+                students.email,
+
+                -- Course
+                courses.course_id,
+                courses.name,
+                courses.max_grade,
+                courses.passing_grade,
+
+                -- Grade
+                grades.score,
+                grades.date,
+                grades.notes,
+                grades.id
+
+            FROM grades
+
+            JOIN students
+                ON grades.student_id = students.student_id
+
+            JOIN courses
+                ON grades.course_id = courses.course_id
+
+            WHERE grades.id = ?
+            """,
+            (grade_id,)
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        student = Student(
+            row[0],
+            row[1],
+            row[2],
+            row[3]
+        )
+
+        course = Course(
+            row[4],
+            row[5],
+            row[6],
+            row[7]
+        )
+
+        return Grade(
+            student=student,
+            course=course,
+            score=row[8],
+            date=row[9],
+            notes=row[10],
+            id=row[11]
+        )
 
 
     def get_all(self) -> list[GradeRecord]:
