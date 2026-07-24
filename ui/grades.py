@@ -73,7 +73,7 @@ def render_grade_details(mode, grade=None, store=None,):
     if mode == "empty":
         view = empty_grade_view()
     elif mode == "create":
-        view = create_grade_view()
+        view = create_grade_view(store)
     elif mode == "edit":
         if grade is None:
             view = empty_grade_view()
@@ -83,6 +83,7 @@ def render_grade_details(mode, grade=None, store=None,):
         view = empty_grade_view()
 
     return grade_view_to_output(view)
+
 
 
 
@@ -101,12 +102,14 @@ def populate_grade_view(grade: Grade, store):
         "title": "### Grade Details",
 
         "student": gr.update(
-            value=f"{grade.student.first_name} {grade.student.last_name}",
+            choices=get_student_choices(store),
+            value=grade.student.student_id,
             interactive=False,
         ),
 
         "course": gr.update(
-            value=grade.course.name,
+            choices=get_course_choices(store),
+            value=grade.course.course_id,
             interactive=False,
         ),
 
@@ -150,8 +153,16 @@ def empty_grade_view():
         "title": "### Grade Details",
 
         
-        "student": "",
-        "course": "",
+        "student": gr.update(
+            choices=[],
+            value=None,
+            interactive=False,
+        ),
+        "course": gr.update(
+            choices=[],
+            value=None,
+            interactive=False,
+        ),
         "score": "",
         "date": "",
         "notes":"",
@@ -174,19 +185,22 @@ def empty_grade_view():
     }
 
 
-def create_grade_view():
+def create_grade_view(store):
     """
     View for creating a new Grade.
     """
     return {
         "title": "### New Grade",
 
-        "student": gr.update(
-            value = "",
+        "student": gr.Dropdown(
+            choices=get_student_choices(store),
+            value=None,
             interactive=True
         ),
-        "course": gr.update(
-            value="",
+
+        "course": gr.Dropdown(
+            choices=get_course_choices(store),
+            value=None,
             interactive=True
         ),
         "score": gr.update(
@@ -202,7 +216,7 @@ def create_grade_view():
             interactive = True
         ),
 
-        "cgradestate": {},
+        "grade_state": {},
         "mode_state": "create",
 
         "save_button": gr.update(
@@ -218,6 +232,32 @@ def create_grade_view():
             visible=True
         ),
     }
+
+# --- Helper functions for create_view --- #
+
+def get_student_choices(store):
+    students = store.get_all_students()
+
+    return [
+        (
+            f"{student.first_name} {student.last_name} ({student.student_id})", 
+            student.student_id
+        )
+        for student in students
+    ]
+
+def get_course_choices(store):
+    courses = store.get_all_courses()
+    return [
+        (
+            f"{course.name} ({course.course_id})",
+            course.course_id
+        )
+        for course in courses
+    ]
+
+
+
 
 
 def grade_view_to_output(view):
@@ -264,6 +304,7 @@ def check_grade_changes(
         )
     # create mode
     if mode_state == "create":
+        print("Mode Create")
         return gr.update(
             interactive=True
         )
@@ -295,68 +336,55 @@ def check_grade_changes(
 # CRUD actions
 # ============================================================
 
-
 def create_grade(
-    student_id,
-    course_id,
+    student,
+    course,
     score,
     date,
     notes,
     store,
 ):
-    """
-    Create a new grade.
-    """
     try:
-
-
-        student = store.get_student(student_id)
-        course = store.get_course(course_id)
-
-        if student is None:
-            gr.Warning(
-            f"No Student found."
-        )
-
-        if course is None:
-            gr.Warning(
-            f"No Course found"
-        )
-        
         grade = Grade(
-            student = student,
-            course = course,
-            score = float(score),
-            date = date,
-            notes = notes
+            student=student,
+            course=course,
+            score=float(score),
+            date=date,
+            notes=notes,
         )
-        store.add_grade(grade)
-       
-        table = refresh_grade_table(store)
 
-        result = render_grade_details("edit", grade, store)
+        print("NEW GRADE:")
+        print(grade)
+
+        store.record_grade(grade)
 
         gr.Info(
             "Grade created successfully"
         )
+
         return (
-                table,
-                *render_grade_details(
-                        "edit",
-                        grade,
-                        store
-                    )
-                )
+            refresh_grade_table(store),
+            *render_grade_details(
+                "edit",
+                grade,
+                store,
+            )
+        )
+
     except Exception as e:
+        print("CREATE GRADE FAILED")
+        print(e)
+
         gr.Warning(
             f"Grade could not be created: {e}"
         )
+
         return (
             refresh_grade_table(store),
             *render_grade_details(
                 "create",
                 None,
-                store
+                store,
             )
         )
 
@@ -377,12 +405,18 @@ def save_grade(
     Decide between create and update.
     """
 
-    student = store.get_student(
-        grade_state["student_id"]
-        )
-    course = store.get_course(
-        grade_state["course_id"]
-    )
+    # student = store.get_student(
+    #     grade_state["student_id"]
+    #     )
+    # course = store.get_course(
+    #     grade_state["course_id"]
+    # )
+    print("SAVE GRADE INPUT")
+    print("student_id:", student_id, type(student_id))
+    print("course_id:", course_id, type(course_id))
+
+    student = store.get_student(student_id)
+    course = store.get_course(course_id)
 
     if student is None:
         gr.Warning(
@@ -395,6 +429,7 @@ def save_grade(
     )
         
     if mode_state == "create":
+        print("CREATE MODE")
         return create_grade(
                     student,
                     course,
@@ -405,6 +440,7 @@ def save_grade(
                 )
             
     elif mode_state == "edit":
+        print("EDIT MODE")
         print("UPDATE WILL BE PERFORMED")
         return update_grade(
             grade_state,
@@ -417,10 +453,11 @@ def save_grade(
         )
 
     else:
+
         gr.Warning(
             "No action available"
         )
-
+        print("NO SAVE POSSIBLE")
         return (
             refresh_grade_table(store),
             *render_grade_details(
@@ -535,7 +572,7 @@ def delete_grade(grade_state, store,):
             refresh_grade_table(store),
             *render_grade_details(
                 "edit",
-                grade,
+                None,
                 store
             )
         )
@@ -595,11 +632,11 @@ def build_grade_tab(store):
                 grade_title = gr.Markdown(
                     "### Grade Details"
                 )
-                student_box = gr.Textbox(
+                student_box = gr.Dropdown(
                     label="Student",
                     interactive=False,
                 )
-                course_name_box = gr.Textbox(
+                course_name_box = gr.Dropdown(
                     label="Course",
                     interactive=False
                 )

@@ -164,6 +164,7 @@ class GradeRepository:
             """,
             (grade_id,)
         ).fetchone()
+        
 
         if row is None:
             return None

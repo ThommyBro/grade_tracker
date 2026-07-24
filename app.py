@@ -332,7 +332,8 @@ def main():
         # add student
         student_ui["add_button"].click(
             fn=lambda: render_student_details(
-                "create"
+                "create",
+                store=store
             ),
             outputs=[
                 student_ui["student_title"],
@@ -682,32 +683,34 @@ def main():
             ]
         )
 
-        # add course
-        # grade_ui["add_button"].click(
-        #     fn=lambda: render_grade_details(
-        #         "create"
-        #     ),
-        #     outputs=[
-        #         grade_ui["course_title"],               # 2
+        # add grade
+        grade_ui["add_button"].click(
+            fn=lambda: render_grade_details(
+                "create", None, store
+            ),
+            outputs=[
+                
+                grade_ui["grade_title"],               # 2
 
-        #         grade_ui["course_id_box"],
-        #         grade_ui["course_name_box"],            # 3
-        #         grade_ui["course_max_grade_box"],       # 4
-        #         grade_ui["course_passing_grade_box"],  # 5
+                grade_ui["student_box"],
+                grade_ui["course_name_box"],            # 3
+                grade_ui["score_box"],       # 4
+                grade_ui["date_box"],  # 5
+                grade_ui["notes_box"],
 
-        #         grade_ui["course_state"],              # 6
-        #         grade_ui["mode_state"],                # 7
+                grade_ui["grade_state"],              # 6
+                grade_ui["mode_state"],                # 7
 
-        #         grade_ui["save_button"],              # 8
-        #         grade_ui["delete_button"],            # 9
-        #         grade_ui["cancel_button"],            # 10
-        #     ]
-        # )
+                grade_ui["save_button"],              # 8
+                grade_ui["delete_button"],            # 9
+                grade_ui["cancel_button"],            # 10
+            ]
+        )
 
 
         grade_ui["cancel_button"].click(
             fn=lambda: render_grade_details(
-                "empty"
+                "empty", None, store
             ),
             outputs=[
                 grade_ui["grade_title"],
