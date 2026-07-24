@@ -51,10 +51,13 @@ def get_grade(self, grade_id: int) -> Grade | None:
 
 
 def select_grade_from_table(table, evt: gr.SelectData, store):
-
+    
     row = evt.index[0]
-    grade_id = table.iloc[row]["ID"]
-    grade = store.get_grade(grade_id)
+    grade_id = int(table.iloc[row]["ID"])
+    
+
+    grade = store.get_grade_by_id(grade_id)
+    
 
     return render_grade_details(
         "edit",
@@ -86,6 +89,7 @@ def render_grade_details(mode, grade=None, store=None,):
 def populate_grade_view(grade: Grade, store):
 
     grade_state = {
+        "id": grade.id,
         "student_id": grade.student.student_id,
         "course_id": grade.course.course_id,
         "score": grade.score,
@@ -236,6 +240,305 @@ def grade_view_to_output(view):
         view["delete_button"],
         view["cancel_button"],
     )
+
+
+# ============================================================
+# Change detection
+# ============================================================
+def check_grade_changes(
+    mode_state,
+    original_grade,
+    score,
+    date,
+    notes,
+):
+    """
+    Enable save button only when data changed.
+    """
+
+    # empty state
+    if mode_state == "empty":
+        print("Mode: Empty")
+        return gr.update(
+            interactive=False
+        )
+    # create mode
+    if mode_state == "create":
+        return gr.update(
+            interactive=True
+        )
+
+    # edit mode
+    if mode_state == "edit":
+        print("Mode: Edit")
+        if not original_grade:
+            print("Mode: Edit but original")
+            return gr.update(
+                interactive=False
+            )
+        
+        changed = (
+            score!= original_grade["score"]
+            or
+            date != original_grade["date"]
+            or
+            notes != original_grade["notes"]
+
+        )
+        print("CHANGED:", changed)
+        return gr.update(interactive=changed)
+    print("No changes")
+    return gr.update(interactive=False)
+
+
+# ============================================================
+# CRUD actions
+# ============================================================
+
+
+def create_grade(
+    student_id,
+    course_id,
+    score,
+    date,
+    notes,
+    store,
+):
+    """
+    Create a new grade.
+    """
+    try:
+
+
+        student = store.get_student(student_id)
+        course = store.get_course(course_id)
+
+        if student is None:
+            gr.Warning(
+            f"No Student found."
+        )
+
+        if course is None:
+            gr.Warning(
+            f"No Course found"
+        )
+        
+        grade = Grade(
+            student = student,
+            course = course,
+            score = float(score),
+            date = date,
+            notes = notes
+        )
+        store.add_grade(grade)
+       
+        table = refresh_grade_table(store)
+
+        result = render_grade_details("edit", grade, store)
+
+        gr.Info(
+            "Grade created successfully"
+        )
+        return (
+                table,
+                *render_grade_details(
+                        "edit",
+                        grade,
+                        store
+                    )
+                )
+    except Exception as e:
+        gr.Warning(
+            f"Grade could not be created: {e}"
+        )
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "create",
+                None,
+                store
+            )
+        )
+
+
+
+
+def save_grade(
+    mode_state,
+    grade_state,
+    student_id,
+    course_id,
+    score,
+    date,
+    notes,
+    store,
+):
+    """
+    Decide between create and update.
+    """
+
+    student = store.get_student(
+        grade_state["student_id"]
+        )
+    course = store.get_course(
+        grade_state["course_id"]
+    )
+
+    if student is None:
+        gr.Warning(
+        f"No Student found."
+    )
+
+    if course is None:
+        gr.Warning(
+        f"No Course found"
+    )
+        
+    if mode_state == "create":
+        return create_grade(
+                    student,
+                    course,
+                    score,
+                    date,
+                    notes,
+                    store,
+                )
+            
+    elif mode_state == "edit":
+        print("UPDATE WILL BE PERFORMED")
+        return update_grade(
+            grade_state,
+            student_id,
+            course_id,
+            score,
+            date,
+            notes,
+            store,
+        )
+
+    else:
+        gr.Warning(
+            "No action available"
+        )
+
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "empty",
+                None,
+                store
+            )
+        )
+
+
+def update_grade(grade_state, student_id, course_id, score, date, notes, store,):
+    """
+    Update existing grade.
+    """
+    try:
+
+        student = store.get_student(
+            grade_state["student_id"]
+            )
+        
+        course = store.get_course(
+            grade_state["course_id"]
+            )
+
+        if student is None:
+            gr.Warning(f"Grade could not be updated. Student missing.")
+
+        if course is None:
+            gr.Warning(f"Grade could not be updated. Course missing.")
+
+        grade = Grade(
+            id=grade_state["id"],
+            student=student,
+            course=course,
+            score=float(score),
+            date=date,
+            notes=notes,
+        )
+        print(f"NEW GRADE: {grade}")
+        store.update_grade(grade)
+
+        gr.Info("Grade updated successfully")
+
+
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "empty",
+                None,
+                store
+            )
+        )
+
+    except Exception as e:
+        gr.Warning(f"Grade could not be updated: {e}")
+
+        old_grade = store.get_grade_by_id(
+            grade_state["id"]
+        )
+
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "edit",
+                old_grade,
+                store
+            )
+        )
+
+
+
+def delete_grade(grade_state, store,):
+    """
+    Delete selected grade.
+    """
+    print(f"Delete Grade State: {grade_state}")
+    if not grade_state:
+        gr.Warning(
+            "Please select a grade first"
+        )
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "empty",
+                None,
+                store
+            )
+        )
+  
+    try:
+        # Check dependencies
+        grade = store.get_grade_by_id(
+                            grade_state["id"]
+                            )
+
+        store.delete_grade(grade)
+        gr.Info(
+            "Course deleted successfully"
+        )
+        return (
+                refresh_grade_table(store),
+                *render_grade_details(
+                    "edit",
+                    grade,
+                    store
+                )
+            )
+    
+    except Exception as e:
+        gr.Warning(f"Delete failed: {e}")
+        return (
+            refresh_grade_table(store),
+            *render_grade_details(
+                "edit",
+                grade,
+                store
+            )
+        )
 
 # ============================================================
 # Build Tab

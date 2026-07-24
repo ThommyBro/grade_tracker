@@ -33,6 +33,10 @@ class GradeStore(ABC):
         ...
 
     @abstractmethod
+    def get_grade_by_id(self, grade_id: int) -> Grade | None:
+        ...
+
+    @abstractmethod
     def get_student_grades(self, student_id: str) -> list[Grade]:
         ... 
 
@@ -47,6 +51,8 @@ class GradeStore(ABC):
     @abstractmethod
     def get_all_courses(self) -> list[Course]:
         ...
+    
+
 
 
     # --- Updates --- #

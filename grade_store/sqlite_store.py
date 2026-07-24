@@ -61,6 +61,9 @@ class SqliteGradeStore(GradeStore):
     def get_all_grades(self) -> list[Grade]:
         return self.grade_repo.get_all_with_details()
     
+    def get_grade_by_id(self, grade_id: str) -> Grade | None:
+        return self.grade_repo.get_grade_by_id(grade_id)
+    
 
     # --- Updates --- #
     def update_course(self, course: Course) -> None:
