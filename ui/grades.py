@@ -1,8 +1,12 @@
 import gradio as gr
+import datetime
+import os
+
 
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
+from grade_management.gradebook import GradeBook
 
 
 
@@ -30,9 +34,16 @@ def load_grade_table(store):
     return rows
 
 
+def download_to_csv(store):
+    print("DOWNLOAD BUTTON CLICKED")
+    file = store.export_grades()
+    print("FILE GENERATED")
+    return file
+
 
 def refresh_grade_table(store):
     """Reload grade table."""
+    print("TABELLE WIRD AKTUALISIERT")
     return load_grade_table(store)
 
 
@@ -58,7 +69,6 @@ def select_grade_from_table(table, evt: gr.SelectData, store):
 
     grade = store.get_grade_by_id(grade_id)
     
-
     return render_grade_details(
         "edit",
         grade,
@@ -85,6 +95,7 @@ def render_grade_details(mode, grade=None, store=None,):
     return grade_view_to_output(view)
 
 
+    
 
 
 def populate_grade_view(grade: Grade, store):
@@ -204,15 +215,15 @@ def create_grade_view(store):
             interactive=True
         ),
         "score": gr.update(
-            value=100,
+            value=50,
             interactive=True
         ),
         "date": gr.update(
-            value = 50,
+            value = datetime.date.today().strftime("%Y-%m-%d"),
             interactive = True
         ),
         "notes": gr.update(
-            value = 50,
+            value = "",
             interactive = True
         ),
 
@@ -220,7 +231,7 @@ def create_grade_view(store):
         "mode_state": "create",
 
         "save_button": gr.update(
-            value="➕ Create Course",
+            value="➕ Create Grade",
             interactive=False
         ),
 
@@ -361,11 +372,12 @@ def create_grade(
         gr.Info(
             "Grade created successfully"
         )
-
+        table = refresh_grade_table(store)
+        
         return (
-            refresh_grade_table(store),
+            gr.update(value=table), #refresh_grade_table(store),
             *render_grade_details(
-                "edit",
+                "empty",
                 grade,
                 store,
             )
@@ -587,6 +599,7 @@ def build_grade_tab(store):
     grade_state = gr.State(value={})
     mode_state = gr.State(value="empty")
     
+    
     with gr.Tab("Grade"):
         # Header row
         with gr.Row():
@@ -602,7 +615,15 @@ def build_grade_tab(store):
                     "➕ Add Grade",
                     variant="primary"
                 )
+            with gr.Column(scale=1, min_width=120):
+                download_button = gr.DownloadButton(
+                    label="⬇️ Download Grades",
+                    variant="primary",
+                    value=lambda: download_to_csv(store),
+                    #visible=True
+                )
 
+                
         # Main content
         with gr.Row():
 
@@ -691,5 +712,8 @@ def build_grade_tab(store):
             "notes_box": notes_box,
 
             "status_message": status_message,
+
+            "download_button": download_button,
+            
         }
     

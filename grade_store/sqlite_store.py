@@ -1,4 +1,7 @@
 import sqlite3
+import csv
+import os
+import tempfile
 
 from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
@@ -11,6 +14,8 @@ from grade_store.grade_store import GradeStore
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
+from grade_management.gradebook import GradeBook
+
 
 
 class SqliteGradeStore(GradeStore):
@@ -20,12 +25,14 @@ class SqliteGradeStore(GradeStore):
             student_repo: StudentRepository,
             course_repo: CourseRepository,
             grade_repo: GradeRepository,
-            statistics_repo: StatisticsRepository
+            statistics_repo: StatisticsRepository,
+            gradebook: GradeBook | None
         ):
         self.student_repo = student_repo
         self.course_repo = course_repo
         self.grade_repo = grade_repo
         self.stats_repo = statistics_repo
+        self.gradebook = gradebook
 
     
     def add_student(self, student: Student) -> None:
@@ -100,3 +107,34 @@ class SqliteGradeStore(GradeStore):
 
     def get_student_courses(self, student_id):
         return self.stats_repo.courses_by_student(student_id)
+    
+
+    # ==========================
+    # Export Methods
+    # ==========================
+    def export_grades(self):
+
+        file = 'grades.csv'
+        print("GENERATING FILE")
+
+        grades = self.grade_repo.get_all_with_details()
+        print("GET REPO DATA")
+
+        rows = self.gradebook.export_grade_rows(grades) 
+        print("WRITING ROWS")
+
+        header = ['Student', 'Course', 'Score', 'Letter', 'Passed', 'Date', 'Notes']
+
+        os.makedirs("exports", exist_ok=True)
+        file_path = os.path.abspath("exports/grades.csv")
+
+        with open(file_path, mode="w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=header)
+            writer.writeheader()
+            writer.writerows(rows)
+            
+        print(f"FILE READY: {file_path}")
+        
+        
+        return file_path
+    

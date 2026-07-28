@@ -1,6 +1,7 @@
 import sqlite3
 import gradio as gr
 from functools import partial
+import tempfile
 
 
 from grade_management.gradebook import GradeBook
@@ -53,7 +54,13 @@ def create_sqlite_store():
     course_repo.create_table()
     grade_repo.create_table()
 
-    store = SqliteGradeStore(student_repo, course_repo, grade_repo, stats_repo)
+    
+
+    store = SqliteGradeStore(student_repo, course_repo, grade_repo, stats_repo, gradebook=None)
+
+    gradebook = load_gradebook(store)
+
+    store.gradebook = gradebook
 
     return store, student_repo, course_repo, grade_repo, stats_repo
 
@@ -141,6 +148,8 @@ def main():
         course_ui = build_course_tab(store)
         grade_ui = build_grade_tab(store)
 
+        #download_btn = gr.DownloadButton("CSV herunterladen")
+
          
 
 
@@ -172,7 +181,12 @@ def main():
       
 
         
+        
+        
 
+        
+
+    
 
         # maybe useless in the meantime ?
         def enable_save_button():
@@ -350,6 +364,8 @@ def main():
                 student_ui["cancel_button"],
             ]
         )
+
+        
 
         student_ui["cancel_button"].click(
             fn=lambda: render_student_details(
@@ -574,6 +590,9 @@ def main():
             ]
         )
 
+        
+        
+
 
 
     # save and update course
@@ -686,11 +705,12 @@ def main():
         # add grade
         grade_ui["add_button"].click(
             fn=lambda: render_grade_details(
-                "create", None, store
+                "create", None, store=store
             ),
             outputs=[
                 
                 grade_ui["grade_title"],               # 2
+                
 
                 grade_ui["student_box"],
                 grade_ui["course_name_box"],            # 3
@@ -706,6 +726,9 @@ def main():
                 grade_ui["cancel_button"],            # 10
             ]
         )
+
+       
+
 
 
         grade_ui["cancel_button"].click(
@@ -730,12 +753,16 @@ def main():
         )
 
 
+        grade_ui["download_button"]
+
+       
+
 
 
 
 
     # start Gradio App
-    app.launch(inbrowser=True)
+    app.queue().launch(inbrowser=True)
 
 if __name__ == "__main__":
     main()

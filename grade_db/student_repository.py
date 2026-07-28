@@ -126,6 +126,14 @@ class StudentRepository:
     def delete(self, student_id: str) -> None:
         """Deletes one Student from the database."""
         with self.conn:
+
+            self.conn.execute(
+            """
+            DELETE FROM grades
+            WHERE student_id = ?
+            """,
+            (student_id,)
+        )
             cursor = self.conn.execute(
                 """
                 DELETE FROM students 

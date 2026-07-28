@@ -78,6 +78,7 @@ class GradeRepository:
         return row is not None
 
 
+
     def add(self, grade: Grade) -> None:
         
         # Check if grade is known

@@ -486,7 +486,7 @@ class GradeBook:
         """
         Generates a csv file with student, courses and their grades.
         """
-
+        print("DOWNLOADING...")
         # prepare data with header row
         header = ['Student ID','Firstname','Lastname','Course ID','Course name','Score','Pass','Date']
         data = [
@@ -509,6 +509,33 @@ class GradeBook:
             writer.writerow(header)
             writer.writerows(data)
             writer.writerow(header)
+        print("CSV READY")
+
+
+    def export_grade_rows(self,grades):
+        """
+        Takes a list of grades from the repo.
+        Produces a dictionary with features for the export.
+        """
+        rows = []
+
+        for grade in grades:
+            rows.append(
+                {
+                    "Student": f"{grade.student.last_name}, {grade.student.first_name} ({grade.student.student_id})",
+                    "Course": f"{grade.course.name} ({grade.course.course_id})",
+                    "Score": grade.score,
+                    "Letter": grade.letter_grade,
+                    "Passed": grade.score >= grade.course.passing_grade,
+                    "Date": grade.date,
+                    "Notes": grade.notes
+                }
+            )
+        return rows
+        
+
+
+        
 
             
 

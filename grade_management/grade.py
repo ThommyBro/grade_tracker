@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import re
 import json
 import csv
+
 from pathlib import Path
 
 from grade_management.student import Student 
@@ -13,8 +14,8 @@ from grade_management.course import Course
 class Grade():
     student: Student
     course: Course
-    score: float
-    date: str
+    score: float = 50.0
+    date: str = "20.07.2026"
     notes: str = ""
     id: int | None = None # new 24.07.26 for gradio list view
     
