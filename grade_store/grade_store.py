@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
+from grade_management.gradebook import GradeBook
 
 class GradeStore(ABC):
     """
@@ -80,4 +81,15 @@ class GradeStore(ABC):
 
     @abstractmethod
     def delete_grade(self, grade: Grade) -> None:
+        ...
+
+
+
+    # --- export --- #
+    # @abstractmethod
+    # def export_to_csv(self) -> list[Grade]:
+    #     ...
+
+    @abstractmethod
+    def export_grades(self) -> str:
         ...

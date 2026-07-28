@@ -22,7 +22,6 @@ def load_course_table(store):
     return rows
 
 
-
 def refresh_course_table(store):
     """Reload course table."""
     return load_course_table(store)
@@ -355,7 +354,7 @@ def create_course(
             f"Course could not be created: {e}"
         )
         return (
-            refresh_course_table(store),
+            gr.update(value=refresh_course_table(store)),
             *render_course_details(
                 "create",
                 None,

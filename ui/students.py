@@ -295,13 +295,6 @@ def check_student_changes(
     """
     Enable save/create button only if data changed.
     """
-    print(
-        "CHECK CHANGES:",
-        mode_state,
-        first_name,
-        last_name,
-        email
-    )
 
     # Empty view
     if mode_state == "empty":
@@ -413,7 +406,7 @@ def create_student(
         )
 
         return (
-            refresh_student_table(store),
+            gr.update(value=refresh_student_table(store)),
             *render_student_details(
                 "edit",
                 student,
@@ -557,9 +550,7 @@ def delete_student(student_state, store):
     try:
         student_id = student_state["student_id"]
         store.delete_student(student_id)
-        gr.Info(
-            "Student deleted successfully"
-        )
+        gr.Info("Student deleted successfully")
 
         return (
             refresh_student_table(store),
