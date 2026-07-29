@@ -46,6 +46,7 @@ def get_store():
 
 
 def student_list(request):
+    """Get all students."""
 
     store = get_store()
     students = store.get_all_students()
@@ -61,10 +62,57 @@ def student_list(request):
         }
     )
 
-    # print("STUDENT LIST VIEW START")
-    # return HttpResponse("Student view works")
+
+def student_detail(request, student_id):
+
+    store = get_store()
+    student = store.get_student(student_id)
+
+    return render(
+        request,
+        "tracker/partials/student_detail.html",
+        {
+            "student": student
+        }
+    )
+
+
+def clear_student_detail(request):
+    print("CLEAR VIEW WURDE AUFGERUFEN")
+    return HttpResponse(" ")
+
+
+def course_list(request):
+    """Get all courses."""
+
+    store = get_store()
+    courses = store.get_all_courses()
+
+    print("NUMBER OF COURSES:", len(courses))
+    print("COURSES:", courses)
+
+    return render(
+        request,
+        "tracker/course_list.html",
+        {
+            "courses": courses
+        }
+    )
+
+
+def student_test(request):
+    """Test for student details"""
+    return HttpResponse("""
+        <div class="card shadow mt-3">
+            <div class="card-body">
+                <h4>HTMX funktioniert 🎉</h4>
+                <p>Dieser Inhalt wurde dynamisch nachgeladen.</p>
+            </div>
+        </div>
+    """)
+   
 
 
 
 def home(request):
-    return HttpResponse("Import funktioniert!")
+    return HttpResponse("Welcome to the real world!")

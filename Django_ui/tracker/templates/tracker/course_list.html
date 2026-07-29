@@ -1,0 +1,48 @@
+{% extends "tracker/base.html" %}
+
+
+{% block content %}
+
+
+<h1 class="mb-4">
+    Courses
+</h1>
+
+
+<table class="table table-striped table-hover">
+
+<thead class="table-dark">
+
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Max Grade</th>
+    <th>Passing Grade</th>
+</tr>
+
+</thead>
+
+
+<tbody>
+
+{% for course in courses %}
+
+<tr>
+
+<td>{{ course.course_id }}</td>
+<td>{{ course.name }}</td>
+<td>{{ course.max_grade}}</td>
+<td>{{ course.passing_grade}}</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+</table>
+
+
+{% endblock %}

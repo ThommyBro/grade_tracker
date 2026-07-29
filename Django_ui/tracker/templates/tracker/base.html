@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Grade Tracker</title>
+
+    <!-- Bootstrap for nicer komponents without html and css code -->
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+        rel="stylesheet">
+
+</head>
+
+<!-- HTMX for detail view of list elements -->
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+
+        <span class="navbar-brand">
+            Grade Tracker
+        </span>
+
+    </div>
+</nav>
+
+
+<div class="container mt-4">
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"> </script>
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+</body>
+
+</html>
