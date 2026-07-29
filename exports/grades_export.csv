@@ -1,0 +1,14 @@
+Student ID,Firstname,Lastname,Course ID,Course name,Score,Pass,Date
+34567,g,z,102,Python classics,85.0,True,2026-07-17
+56789,Benno,Beter,104,QM3,34.0,False,2026-07-17
+12345,t,b,101,QM4,99.0,True,50
+12345,t,b,104,QM3,100.0,True,50
+56789,Benno,Beter,101,QM4,50.0,True,2026-07-27
+45678910,thomas,f,321,diesdas,51.0,True,2026-07-27
+3242341111,anna,enu,105,QM2,100.0,True,2026-07-27
+41515,Albert,Einstein,201,Category Theory III,100.0,True,2026-07-27
+134159,Mileva,Einstein,201,Category Theory III,89.0,True,2026-07-27
+5432,thomas,c,101,QM4,100.0,True,2026-07-27
+,thomas,bla,102,Python classics,80.0,True,2026-07-27
+41515,Albert,Einstein,101,QM4,100.0,True,2026-07-27
+Student ID,Firstname,Lastname,Course ID,Course name,Score,Pass,Date

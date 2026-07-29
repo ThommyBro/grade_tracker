@@ -15,12 +15,12 @@ from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
 
-from ui.header import build_header
-from ui.courses import *
-from ui.students import *
-from ui.grades import *
-from ui.dashboard import build_dashboard_tab
-from ui.statistics import build_statistics_tab
+from Gradio_ui.header import build_header
+from Gradio_ui.courses import *
+from Gradio_ui.students import *
+from Gradio_ui.grades import *
+from Gradio_ui.dashboard import build_dashboard_tab
+from Gradio_ui.statistics import build_statistics_tab
 
 from grade_store.sqlite_store import SqliteGradeStore
 

@@ -1,0 +1,18 @@
+Student,Course,Score,Letter,Passed,Date,Notes
+"z, g (34567)",Python classics (102),85.0,B,True,2026-07-17,
+"Beter, Benno (56789)",QM3 (104),34.0,F,False,2026-07-17,
+"b, t (12345)",QM4 (101),99.0,A,True,50,50
+"b, t (12345)",QM3 (104),100.0,A,True,50,50
+"Beter, Benno (56789)",QM4 (101),50.0,F,True,2026-07-27,summer term
+"f, thomas (45678910)",diesdas (321),51.0,F,True,2026-07-27,
+"enu, anna (3242341111)",QM2 (105),100.0,A,True,2026-07-27,
+"Zweistein, Albert (41515)",Category Theory III (201),100.0,A,True,2026-07-27,
+"Einstein, Mileva (134159)",Category Theory III (201),89.0,B,True,2026-07-27,
+"c, thomas (5432)",QM4 (101),100.0,A,True,2026-07-27,
+"bla, thomas ()",Python classics (102),80.0,B,True,2026-07-27,
+"Zweistein, Albert (41515)",QM4 (101),100.0,A,True,2026-07-27,
+"blöd, hein (9393939)",Category Theory III (201),70.0,C,True,2026-07-27,
+"penrose, roger (213124)",Langrangian Theory (300),99.0,A,True,2026-07-27,
+"Einstein, Mileva (134159)",QM4 (101),55.0,F,True,2026-07-27,
+"Zweistein, Albert (41515)",Group Theory (400),99.0,A,True,2026-07-27,
+"blöd, hein (9393939)",diesdas (321),51.0,F,True,2026-07-28,
