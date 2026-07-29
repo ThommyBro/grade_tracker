@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grade-tracker"
+version = "0.1.0"
+description = "Grade Tracker application"
+requires-python = ">=3.13"
+
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "grade_store*",
+    "grade_db*",
+    "grade_management*"
+]

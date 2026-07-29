@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: grade-tracker
+Version: 0.1.0
+Summary: Grade Tracker application
+Requires-Python: >=3.13
