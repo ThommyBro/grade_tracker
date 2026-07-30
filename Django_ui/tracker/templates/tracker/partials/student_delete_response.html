@@ -1,0 +1,8 @@
+{% include "tracker/partials/message.html" %}
+
+
+<div id="student-card" hx-swap-oob="outerHTML">
+</div>
+
+
+{% include "tracker/partials/student_table.html" with students=students %}

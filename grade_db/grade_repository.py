@@ -52,8 +52,8 @@ class GradeRepository:
                         score REAL NOT NULL,
                         date TEXT NOT NULL,
                         notes TEXT DEFAULT NULL,
-                    FOREIGN KEY (student_id) REFERENCES students(student_id),
-                    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+                    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+                    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
                 )"""
             )
 
@@ -477,8 +477,8 @@ class GradeRepository:
             grades.append(grade)
 
         return grades
-
     
+
 
 
 

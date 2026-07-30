@@ -12,10 +12,12 @@
 
 </head>
 
-<!-- HTMX for detail view of list elements -->
-<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+
 
 <body>
+
+{% csrf_token %}
 
 <nav class="navbar navbar-dark bg-dark">
     <div class="container">
@@ -28,7 +30,13 @@
 </nav>
 
 
-<div class="container mt-4">
+
+
+
+
+ <div class="container mt-4">
+
+    <div id="messages"></div>
 
     {% block content %}
     {% endblock %}
@@ -40,7 +48,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"> </script>
 
+<!-- HTMX for detail view of list elements -->
 <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+<script>
+document.body.addEventListener(
+    "htmx:configRequest",
+    (event) => {
+
+        event.detail.headers["X-CSRFToken"] =
+            document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            ).value;
+
+    }
+);
+</script>
 
 </body>
 

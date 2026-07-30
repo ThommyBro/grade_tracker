@@ -6,6 +6,8 @@ from grade_db.student_repository import StudentRepository
 from grade_db.course_repository import CourseRepository
 from grade_db.grade_repository import GradeRepository 
 
+from grade_management.gradebook import GradeBook
+
 # import stores
 from grade_store.grade_store import GradeStore
 from grade_store.in_memory_store import InMemoryGradeStore
@@ -14,6 +16,55 @@ from grade_store.sqlite_store import SqliteGradeStore
 # import sample data und function
 from sample_data import SampleData, create_test_data
 
+
+
+def test_store_fixture_works(store):
+    assert store is not None
+
+
+def test_store_has_repositories(store):
+
+    assert store.student_repo is not None
+    assert store.course_repo is not None
+    assert store.grade_repo is not None
+
+
+def test_delete_student_removes_grades(
+        store,
+        student,
+        course,
+        grade
+):
+
+    # Arrange
+    store.add_student(student)
+    store.add_course(course)
+    store.record_grade(grade)
+
+
+    grades_before = store.get_student_grades(
+        student.student_id
+    )
+
+    assert len(grades_before) == 1
+
+
+    # Act
+    store.delete_student(student)
+
+
+    # Assert
+    assert (
+        store.get_student(student.student_id)
+        is None
+    )
+
+
+    grades_after = store.get_student_grades(
+        student.student_id
+    )
+
+    assert grades_after == []
 
 
 

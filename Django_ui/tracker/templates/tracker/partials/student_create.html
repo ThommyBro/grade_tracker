@@ -1,0 +1,100 @@
+<div id="student-card" class="card shadow mt-3">
+
+    <div class="card-body">
+
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <h5 class="card-title mb-0">
+                Create Student
+            </h5>
+
+
+            <button
+                class="btn btn-sm btn-outline-secondary"
+                hx-get="{% url 'clear-student-detail' %}"
+                hx-target="#student-card"
+                hx-swap="outerHTML">
+
+                ✕
+
+            </button>
+
+        </div>
+
+
+        <form
+            class="mt-3"
+            hx-post="{% url 'create-student' %}"
+            hx-target="#student-card"
+            hx-swap="outerHTML">
+
+
+            {% csrf_token %}
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Student ID
+                </label>
+
+                <input
+                    class="form-control"
+                    name="student_id">
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    First Name
+                </label>
+
+                <input
+                    class="form-control"
+                    name="first_name">
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Last Name
+                </label>
+
+                <input
+                    class="form-control"
+                    name="last_name">
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Email
+                </label>
+
+                <input
+                    class="form-control"
+                    name="email">
+
+            </div>
+
+
+            <button
+                class="btn btn-success">
+
+                💾 Save
+
+            </button>
+
+
+        </form>
+
+    </div>
+
+</div>

@@ -15,60 +15,40 @@ Studenten
 
 <div class="card shadow">
 
-    <div class="card-header">
-        All students
+    <div class="card-header d-flex justify-content-between align-items-center">
+
+        <span>
+            All students
+        </span>
+
+
+        <button
+            class="btn btn-outline-success btn-sm"
+            hx-get="{% url 'create-student' %}"
+            hx-target="#student-card"
+            hx-swap="innerHTML">
+
+            ➕
+
+        </button>
+
+
     </div>
 
 
     <div class="card-body">
+         <div id="student-card">
+
+        </div>
+
+        <div id="student-table">
+
+            {% include "tracker/partials/student_table.html" %}
+
+        </div>
 
 
-        <table class="table table-striped table-hover">
-
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Firstname</th>
-                    <th>Lastname</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-
-
-            <tbody>
-
-            {% for student in students %}
-
-                <tr
-                    hx-get="/students/{{ student.student_id }}/"
-                    hx-target="#student-detail"
-                    hx-trigger="click"
-                    style="cursor:pointer;"
-                >
-                    <td>{{ student.student_id }}</td>
-                    <td>{{ student.first_name }}</td>
-                    <td>{{ student.last_name }}</td>
-                    <td>{{ student.email }}</td>
-                </tr>
-
-            {% endfor %}
-            
-
-           <!--Test Button for htmx
-            <button 
-                class="btn btn-primary"
-                hx-get="/student-test/"
-                hx-target="#student-detail"
-            >
-                HTMX Test laden
-            </button>
-            -->
-            <div id="student-detail">
-            </div>
-
-            </tbody>
-
-        </table>
+       
 
 
     </div>

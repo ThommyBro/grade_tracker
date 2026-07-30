@@ -1,0 +1,41 @@
+<div id="messages" hx-swap-oob="innerHTML">
+
+    <div
+        id="status-message"
+        class="alert alert-success shadow-sm d-flex align-items-center"
+        role="alert">
+
+        <span class="fs-4 me-3">
+            ✅
+        </span>
+
+        <div>
+            {{ message }}
+        </div>
+
+    </div>
+
+    <script>
+
+        setTimeout(function () {
+
+            const msg = document.getElementById("status-message");
+
+            if (msg) {
+
+                msg.style.transition = "opacity 0.5s ease";
+                msg.style.opacity = "0";
+
+                setTimeout(function () {
+
+                    msg.remove();
+
+                }, 500);
+
+            }
+
+        }, 3000);
+
+    </script>
+
+</div>
