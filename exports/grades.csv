@@ -1,0 +1,11 @@
+Student,Course,Score,Letter,Passed,Date,Notes
+"enu, anna (3242341111)",QM2 (105),100.0,A,True,2026-07-27,
+"Zweistein, Albert (41515)",Category Theory III (201),100.0,A,True,2026-07-27,
+"Einstein, Mileva (134159)",Category Theory III (201),89.0,B,True,2026-07-27,
+"bla, thomas ()",Python classics (102),80.0,B,True,2026-07-27,
+"Zweistein, Albert (41515)",QM4 (101),100.0,A,True,2026-07-27,
+"schlau, hein (9393939)",Category Theory III (201),70.0,C,True,2026-07-27,
+"penrose, roger (213124)",Langrangian Theory (300),99.0,A,True,2026-07-27,
+"Einstein, Mileva (134159)",QM4 (101),55.0,F,True,2026-07-27,
+"Zweistein, Albert (41515)",Group Theory (400),99.0,A,True,2026-07-27,
+"schlau, hein (9393939)",diesdas (321),51.0,F,True,2026-07-28,

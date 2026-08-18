@@ -93,3 +93,17 @@ class GradeStore(ABC):
     @abstractmethod
     def export_grades(self) -> str:
         ...
+
+
+    # --- statistics --- #
+    @abstractmethod
+    def average_grade_by_course(self, course: Course) -> None:
+        ...
+
+    @abstractmethod
+    def count_students_per_course(self, course: Course) -> int:
+        ...
+
+
+    @abstractmethod
+    def 
