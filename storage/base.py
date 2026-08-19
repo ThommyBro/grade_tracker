@@ -20,7 +20,7 @@ class GradeStore(ABC):
         ...
 
     @abstractmethod
-    def record_grade(self, grade: Grade) -> None:
+    def add_grade(self, grade: Grade) -> None:
         ...
 
 
@@ -53,8 +53,6 @@ class GradeStore(ABC):
     def get_all_courses(self) -> list[Course]:
         ...
     
-
-
 
     # --- Updates --- #
     @abstractmethod
