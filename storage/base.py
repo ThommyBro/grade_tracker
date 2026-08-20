@@ -42,6 +42,10 @@ class GradeStore(ABC):
         ... 
 
     @abstractmethod
+    def get_course_grades(self, course_id: str) -> list[Grade]: 
+        ...
+
+    @abstractmethod
     def get_all_grades(self) -> list[Grade]:
         ...
 
@@ -64,7 +68,7 @@ class GradeStore(ABC):
         ...
     
     @abstractmethod
-    def update_grade(self, grade: Grade) -> None:
+    def update_grade(self, grade_id: str, score: float, date: str, notes: str = "") -> Grade:
         ...
 
     
@@ -78,7 +82,7 @@ class GradeStore(ABC):
         ...
 
     @abstractmethod
-    def delete_grade(self, grade: Grade) -> None:
+    def delete_grade(self, grade_id: str) -> None:
         ...
 
 

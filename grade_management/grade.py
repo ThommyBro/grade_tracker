@@ -18,6 +18,7 @@ class Grade():
     date: str = "20.07.2026"
     notes: str = ""
     id: int | None = None # new 24.07.26 for gradio list view
+    grade_id: str = ""
     
     
 

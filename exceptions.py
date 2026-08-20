@@ -30,3 +30,11 @@ class DuplicateEntryError(GradeTrackerError):
         self.entity = entity
         self.entity_id = entity_id
         super().__init__(f"{entity} with ID '{entity_id}' already exists.")
+
+
+class GradeNotFoundError(GradeTrackerError):
+    """Is raised if a grade ID is not found."""
+
+    def __init__(self, grade_id: str):
+        self.grade_id = grade_id
+        super().__init__(f"Note mit ID '{grade_id}' wurde nicht gefunden.")
