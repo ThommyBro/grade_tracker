@@ -1,18 +1,22 @@
+import threading
+
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
 
-from grade_store.grade_store import GradeStore
+from storage.base import GradeStore
+#from grade_store.grade_store import GradeStore
 
 from exceptions import (DuplicateEntryError, StudentNotFoundError, CourseNotFoundError, GradeNotFoundError)
 
 
-class InMemoryGradeStore(GradeStore):
+class MemoryGradeStore(GradeStore):
     """
     Saves all data in dicts and lists. There is no persistence.
     """
 
     def __init__(self):
+        self._lock = threading.RLock()
         self._students: dict[str, Student] = {}
         self._courses: dict[str, Course] = {}
         self._grades: dict[str, Grade] = {}
@@ -33,7 +37,7 @@ class InMemoryGradeStore(GradeStore):
             raise StudentNotFoundError(student_id)
         return student
 
-    def list_students(self) -> list[Student]:
+    def get_all_students(self) -> list[Student]:
         return list(self._students.values())
 
     def update_student(self, student: Student) -> None:
@@ -53,18 +57,18 @@ class InMemoryGradeStore(GradeStore):
                     grade_id=grade_id,
                 )
 
-    def delete_student(self, student: Student) -> None:
-        self.get_student(student.student_id)  # wirft StudentNotFoundError, falls unbekannt
+    def delete_student(self, student_id: str) -> None:
+        self.get_student(student_id)  # wirft StudentNotFoundError, falls unbekannt
 
         ids_to_delete = [
             grade_id
             for grade_id, grade in self._grades.items()
-            if grade.student.student_id == student.student_id
+            if grade.student.student_id == student_id
         ]
         for grade_id in ids_to_delete:
             del self._grades[grade_id]
 
-        del self._students[student.student_id]
+        del self._students[student_id]
 
     # ------------------------------------------------------------------ #
     # Courses
@@ -80,7 +84,7 @@ class InMemoryGradeStore(GradeStore):
             raise CourseNotFoundError(course_id)
         return course
 
-    def list_courses(self) -> list[Course]:
+    def get_all_courses(self) -> list[Course]:
         return list(self._courses.values())
 
     def update_course(self, course: Course) -> None:
@@ -99,25 +103,23 @@ class InMemoryGradeStore(GradeStore):
                     grade_id=grade_id,
                 )
 
-    def delete_course(self, course: Course) -> None:
-        self.get_course(course.course_id)  # wirft CourseNotFoundError, falls unbekannt
+    def delete_course(self, course_id: str) -> None:
+        self.get_course(course_id)  # wirft CourseNotFoundError, falls unbekannt
 
         ids_to_delete = [
             grade_id
             for grade_id, grade in self._grades.items()
-            if grade.course.course_id == course.course_id
+            if grade.course.course_id == course_id
         ]
         for grade_id in ids_to_delete:
             del self._grades[grade_id]
 
-        del self._courses[course.course_id]
+        del self._courses[course_id]
 
     # ------------------------------------------------------------------ #
     # Grades
     # ------------------------------------------------------------------ #
-    def add_grade(
-        self, student_id: str, course_id: str, score: float, date: str, notes: str = ""
-    ) -> Grade:
+    def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> Grade:
         student = self.get_student(student_id)
         course = self.get_course(course_id)
 
@@ -130,6 +132,13 @@ class InMemoryGradeStore(GradeStore):
         self._grades[grade_id] = grade
         return grade
 
+    def get_grade(self, grade_id: str) -> Grade:
+        with self._lock:
+            grade = self._grades.get(grade_id)
+            if grade is None:
+                raise GradeNotFoundError(grade_id)
+            return grade
+
     def get_student_grades(self, student_id: str) -> list[Grade]:
         self.get_student(student_id)  # error if unknown
         return [g for g in self._grades.values() if g.student.student_id == student_id]
@@ -138,14 +147,9 @@ class InMemoryGradeStore(GradeStore):
         self.get_course(course_id)  # error if unknown
         return [g for g in self._grades.values() if g.course.course_id == course_id]
 
-    def list_grades(self) -> list[Grade]:
+    def get_all_grades(self) -> list[Grade]:
         return list(self._grades.values())  
 
-    def get_grade(self, grade_id: str) -> Grade:
-        grade = self._grades.get(grade_id)
-        if grade is None:
-            raise GradeNotFoundError(grade_id)
-        return grade
 
     def update_grade(self, grade_id: str, score: float, date: str, notes: str = "") -> Grade:
         existing = self.get_grade(grade_id)  # error if unknown

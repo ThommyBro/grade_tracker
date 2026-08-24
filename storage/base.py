@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
-from grade_management.gradebook import GradeBook
+#from grade_management.gradebook import GradeBook
 
 class GradeStore(ABC):
     """
@@ -20,7 +20,7 @@ class GradeStore(ABC):
         ...
 
     @abstractmethod
-    def add_grade(self, grade: Grade) -> None:
+    def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> None:
         ...
 
 
@@ -33,9 +33,9 @@ class GradeStore(ABC):
     def get_course(self, course_id: str) -> Course | None:
         ...
 
-    @abstractmethod
-    def get_grade_by_id(self, grade_id: int) -> Grade | None:
-        ...
+    # @abstractmethod
+    # def get_grade_by_id(self, grade_id: int) -> Grade | None:
+    #     ...
 
     @abstractmethod
     def get_student_grades(self, student_id: str) -> list[Grade]:
@@ -43,6 +43,10 @@ class GradeStore(ABC):
 
     @abstractmethod
     def get_course_grades(self, course_id: str) -> list[Grade]: 
+        ...
+
+    @abstractmethod
+    def get_grade(self, grade_id: str) -> Grade:
         ...
 
     @abstractmethod
@@ -74,15 +78,15 @@ class GradeStore(ABC):
     
     # --- Delete --- #
     @abstractmethod
-    def delete_student(self, student: Student) -> None:
+    def delete_student(self, student_id: str) -> None:
         ...
 
     @abstractmethod
-    def delete_course(self, course: Course) -> None:
+    def delete_course(self, course_id: str) -> None:
         ...
 
     @abstractmethod
-    def delete_grade(self, grade_id: str) -> None:
+    def delete_grade(self, grade_id: str) -> None: 
         ...
 
 
@@ -92,17 +96,19 @@ class GradeStore(ABC):
     # def export_to_csv(self) -> list[Grade]:
     #     ...
 
-    @abstractmethod
-    def export_grades(self) -> str:
-        ...
+    # @abstractmethod
+    # def export_grades(self) -> str:
+    #     ...
 
 
-    # --- statistics --- #
-    @abstractmethod
-    def average_grade_by_course(self, course: Course) -> None:
-        ...
+    # # --- statistics --- #
+    # @abstractmethod
+    # def average_grade_by_course(self, course: Course) -> None:
+    #     ...
 
-    @abstractmethod
-    def count_students_per_course(self, course: Course) -> int:
-        ...
+    # @abstractmethod
+    # def count_students_per_course(self, course: Course) -> int:
+    #     ...
+
+   
 

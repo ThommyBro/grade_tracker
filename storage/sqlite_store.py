@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+import threading
 
 from grade_management.course import Course
 from grade_management.student import Student
@@ -176,22 +177,19 @@ class GradeDataBase:
                 raise CourseNotFoundError(course.course_id)
                 
         
-    def delete_course(self, course: Course) -> None:
+    def delete_course(self, course_id: str) -> None:
         """Deletes one Course from the database."""
         with self.conn:
-            cursor = self.conn.execute("DELETE FROM courses WHERE course_id = ?", (course.course_id,),)
+            cursor = self.conn.execute("DELETE FROM courses WHERE course_id = ?", (course_id,),)
             if cursor.rowcount == 0:
-                raise CourseNotFoundError(course.course_id)
+                raise CourseNotFoundError(course_id)
 
 
     # =============================================== #
     #           Grades 
     # =============================================== #
 
-    def add_grade(
-            self, student_id: str, course_id: str, score: float, date: str, notes: str = ""
-        ) -> Grade:
-
+    def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> Grade:
         # check post_init in grade before we write to the DB
         student = self.get_student(student_id)
         course = self.get_course(course_id)
@@ -206,7 +204,7 @@ class GradeDataBase:
         grade.grade_id = str(cursor.lastrowid)
         return grade
 
-    def list_grades(self) -> list[Grade]:
+    def get_all_grades(self) -> list[Grade]:
         rows = self.conn.execute("SELECT * FROM grades").fetchall()
         return [self._row_to_grade(r) for r in rows]
 
