@@ -74,9 +74,9 @@ class GradeBook:
         """Updates a student, but student_id stays the same."""
         self.store.update_student(student)
 
-    def delete_student(self, student: Student) -> None:
+    def delete_student(self, student_id: str) -> None:
         """Deletes a student and its corresponding grades."""
-        self.store.delete_student(student.student_id)
+        self.store.delete_student(student_id)
 
     def update_course(self, course: Course) -> None:
         """Updates Course but checks scores beforehand."""
