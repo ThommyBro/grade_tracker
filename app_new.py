@@ -22,11 +22,11 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------- #
-# Ein einzelnes, geteiltes GradeBook für die ganze App (SQLite-Datei neben
-# dem Paket, überlebt also Neustarts). Für einen reinen In-Memory-Demo-Modus
-# einfach GradeBook() ohne store= verwenden.
+# Use DB_PATH or MEMORY in _GRADEBOOK as switch for your saving preferences
+# DB_PATH uses an SQLite database in the same folder as this file for permanent storage
+# MEMORY is just in-memory storage for faster testing. Data will be deleted at restart
 # ---------------------------------------------------------------------- #
-# Ermittelt den genauen Ordner, in dem diese app_new.py liegt
+# Finds path of this files
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "grades_new.db")
 #DB_PATH = Path(__file__).resolve().parent / "grades_new.db"
@@ -47,6 +47,49 @@ LETTERS = ("A", "B", "C", "D", "F")
 
 
 
+# ======================================================================== #
+#       Header
+# ======================================================================== #
+def build_header():
+    with gr.Group():
+            with gr.Row(equal_height=True):
+
+                # Logo 
+                with gr.Column(scale=0, min_width=100):
+                    gr.Image(
+                        "images/logo.png",
+                        container=False,
+                        width=65,
+                        height=65,
+                        interactive=False,
+                        buttons=[],
+                        show_label=False
+                    )
+
+                # Title
+                with gr.Column(scale=4):
+                    gr.Markdown(
+                        """
+                        <div style="padding-top: 3px;">
+                            <h1 style="margin-bottom: 0;">
+                                Grade Tracker
+                            </h1>
+                            <p style="margin-top: 0; color: gray;">
+                                Academic Management Dashboard
+                            </p>
+                        </div>
+                        """
+                    )
+
+                # Version Display
+                with gr.Column(scale=1, min_width=150):
+                    gr.Markdown(
+                        """
+                        <div style="text-align:right">
+                        v0.785
+                        </div>
+                        """
+                    )
 # ======================================================================== #
 #       Tables
 # Use get_all_... functions
@@ -549,11 +592,14 @@ def load_demo_data_handler():
         ("s2", "Ben", "Beta", "ben@uni.com"),
         ("s3", "Clara", "Gamma", "clara@uni.com"),
         ("s4", "David", "Delta", "david@uni.com"),
+        ("s5", "Emil", "Epsilon", "emil@uni.com"),
+
     ]
     demo_courses = [
         ("c1", "Category Theory", 100.0, 50.0),
         ("c2", "Python 101", 100.0, 60.0),
         ("c3", "QM 1", 100, 50),
+        ("c4", "Lagrangian Fun", 100, 50),
     ]
     demo_grades = [
         ("s1", "c1", 92, "2026-01-15"),
@@ -568,6 +614,9 @@ def load_demo_data_handler():
         ("s4", "c1", 41, "2026-01-15"),
         ("s4", "c2", 6, "2026-01-20"),
         ("s4", "c3", 51, "2026-01-25"),
+        ("s5", "c1", 55, "2026-01-25"),
+        ("s5", "c2", 99, "2026-01-20"),
+        ("s5", "c4", 100, "2026-01-25"),
     ]
     for sid, fn, ln, email in demo_students:
         try:
@@ -584,7 +633,8 @@ def load_demo_data_handler():
             book.add_grade(sid, cid, score, grade_date)
         except (ValueError, StudentNotFoundError, CourseNotFoundError):
             pass
-    return "✅ Demo-Data loaded"
+    gr.Info("✅ Demo-Data loaded")
+    #return "✅ Demo-Data loaded"
 
 # ======================================================================== #
 # Reports
@@ -626,8 +676,9 @@ with gr.Blocks(
     theme=gr.Theme.from_hub("KevinGeng/Laronix"),
     #css=CUSTOM_CSS,
 ) as demo:
-    gr.Markdown("# 📚 Grade Tracker", elem_classes=["app-title"])
-    gr.Markdown("Dashboard for students, courses and grades.")
+    #gr.Markdown("# 📚 Grade Tracker", elem_classes=["app-title"])
+    #gr.Markdown("Dashboard for students, courses and grades.")
+    build_header()
 
 
 # --- Students Tab --- #
@@ -661,7 +712,12 @@ with gr.Blocks(
             edit_student_email = gr.Textbox(label="E-Mail")
             with gr.Row():
                 save_student_btn = gr.Button("💾 Save", variant="primary")
+                # Test for spacing between Buttons
+                with gr.Column(scale=1, visible=True):
+                    pass 
                 delete_student_btn = gr.Button("🗑️ Delete", variant="stop")
+                with gr.Column(scale=1, visible=True):
+                    pass 
                 close_student_panel_btn = gr.Button("✖ Close")
             #edit_student_status = gr.Textbox(label="Status", interactive=False)
 
