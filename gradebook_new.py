@@ -131,14 +131,23 @@ class GradeBook:
         averages.sort(key=lambda pair: pair[1], reverse=True)
         return averages[:n]
 
-    def students_at_risk(self, threshold: float = 60.0) -> list[Student]:
-        return [
-            student
-            for student in self.store.get_all_students()
-            if self.get_student_grades(student.student_id)
-            and self.student_average(student.student_id) < threshold
-        ]
 
+    # def students_at_risk(self, threshold: float = 60.0) -> list[Student]:
+    #     return [
+    #         student
+    #         for student in self.store.get_all_students()
+    #         if self.get_student_grades(student.student_id)
+    #         and self.student_average(student.student_id) < threshold
+    #     ]
+    def students_at_risk(self, threshold: float = 60.0) -> list[tuple[Student, float]]:
+        averages = [
+                    (student, self.student_average(student.student_id))
+                    for student in self.store.get_all_students()
+                    if self.get_student_grades(student.student_id)
+                    and self.student_average(student.student_id) < threshold
+                ]
+        averages.sort(key=lambda pair: pair[1], reverse=True)
+        return averages[:]
 
     # ------------------------------------------------------------------ #
     # Searching

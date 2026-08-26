@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class CsvReportGenerator(ReportGenerator):
     """3 Methods for all Reports from the Baseclass in CSV format."""
 
-    def generate_student_report(self, student_id: str, gradebook: "GradeBook") -> str:
+    def generate_student_report(self, student_id: str, gradebook: GradeBook) -> str:
         grades = gradebook.get_student_grades(student_id)
         buf = io.StringIO()
         writer = csv.writer(buf)
@@ -36,7 +36,7 @@ class CsvReportGenerator(ReportGenerator):
             )
         return buf.getvalue()
 
-    def generate_course_report(self, course_id: str, gradebook: "GradeBook") -> str:
+    def generate_course_report(self, course_id: str, gradebook: GradeBook) -> str:
         grades = gradebook.get_course_grades(course_id)
         buf = io.StringIO()
         writer = csv.writer(buf)
@@ -47,7 +47,7 @@ class CsvReportGenerator(ReportGenerator):
             )
         return buf.getvalue()
 
-    def generate_summary_report(self, gradebook: "GradeBook") -> str:
+    def generate_summary_report(self, gradebook: GradeBook) -> str:
         buf = io.StringIO()
         writer = csv.writer(buf)
         writer.writerow(["metric", "value"])
@@ -55,11 +55,11 @@ class CsvReportGenerator(ReportGenerator):
         writer.writerow(["courses", len(gradebook.courses)])
         writer.writerow(["grades", len(gradebook.grades)])
         writer.writerow([])
-        writer.writerow(["top_students", "average_pct"])
+        writer.writerow(["Top Students", "average_pct"])
         for student, avg in gradebook.top_students():
             writer.writerow([student.full_name, f"{avg:.1f}"])
         writer.writerow([])
-        writer.writerow(["at_risk_students"])
-        for student in gradebook.students_at_risk():
-            writer.writerow([student.full_name])
+        writer.writerow(["Students at risk"])
+        for student, avg in gradebook.students_at_risk():
+            writer.writerow([student.full_name, f"{avg:.1f}"])
         return buf.getvalue()

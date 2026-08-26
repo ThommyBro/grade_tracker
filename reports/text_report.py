@@ -60,24 +60,24 @@ class TextReportGenerator(ReportGenerator):
 
     def generate_summary_report(self, gradebook: "GradeBook") -> str:
         lines = ["Overview", "=" * 56]
-        lines.append(f"Student:    {len(gradebook.students)}")
-        lines.append(f"Course:          {len(gradebook.courses)}")
-        lines.append(f"Grades: {len(gradebook.grades)}")
+        lines.append(f"{'Students:':15} {len(gradebook.students)}")
+        lines.append(f"{'Courses:':15}  {len(gradebook.courses)}")
+        lines.append(f"{'Grades:':15}   {len(gradebook.grades)}")
         lines.append("")
-
-        lines.append("Top Studends:")
+            #print(f"{product:<{width}} -> {location}")
+        lines.append("Top Students:")
         top = gradebook.top_students()
         if not top:
             lines.append("  (No Data)")
         for student, avg in top:
-            lines.append(f"  {student.full_name:<28}{avg:>6.1f}%")
+            lines.append(f"  {student.full_name:30}     {avg:>10.1f}%")
 
         lines.append("")
         lines.append("Students at risk (< 60 %):")
         at_risk = gradebook.students_at_risk()
         if not at_risk:
             lines.append("  (no)")
-        for student in at_risk:
-            lines.append(f"  {student.full_name}")
+        for student, avg in at_risk:
+            lines.append(f"  {student.full_name:30}    {avg:>10.1f}")
 
         return "\n".join(lines)

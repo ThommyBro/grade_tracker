@@ -144,15 +144,18 @@ def _enrolled_students_table(book: GradeBook, course_id: str) -> list[list]:
 
 
 def _top_students_table(book: GradeBook) -> list[list]:
-    return [[s.full_name, f"{avg:.1f}%"] for s, avg in book.top_students(n=10)]
+    return [
+        [s.full_name, f"{avg:.1f}%"] 
+        for s, avg in book.top_students(n=10)
+    ]
 
 
 def _at_risk_table(book: GradeBook) -> list[list]:
     return [
-        [s.full_name, f"{book.student_average(s.student_id):.1f}%"]
-        for s in book.students_at_risk()
+        [s.full_name, f"{avg:.1f}%"]
+        for s, avg in book.students_at_risk()
     ]
-
+    #book.student_average(s.student_id):.1f
 
 def _dashboard_summary_md(book: GradeBook) -> str:
     return (
@@ -343,6 +346,7 @@ def confirm_delete_student_handler(student_id):
         gr.Info(msg)
     except StudentNotFoundError as exc:
         msg = f"❌ Error: {exc}"
+        gr.Info(msg)
     # Close both panels
     return gr.Group(visible=False), gr.Group(visible=False)
 
@@ -426,7 +430,8 @@ def save_course_handler(course_id, name, max_grade, passing_grade):
         gr.Info(f"✅ Course '{updated.name}' was updated.")
         return gr.Group(visible=False)
     except (ValueError, CourseNotFoundError, TypeError) as exc:
-        return f"❌ Error: {exc}", gr.Group(visible=True)
+        gr.Info(f"❌ Error: {exc}")
+        return gr.Group(visible=True)
 
 
 def request_delete_course_handler(course_id):
@@ -673,7 +678,9 @@ def generate_report_handler(report_type, format_, student_id, course_id):
 # ======================================================================== #
 with gr.Blocks(
     title="Grade Tracker",
-    theme=gr.Theme.from_hub("KevinGeng/Laronix"),
+    #theme=gr.Theme.from_hub("KevinGeng/Laronix"),
+    #theme=gr.Theme.from_hub("Maani/MonoNeo"),
+    theme=gr.themes.Ocean()
     #css=CUSTOM_CSS,
 ) as demo:
     #gr.Markdown("# 📚 Grade Tracker", elem_classes=["app-title"])
@@ -737,6 +744,9 @@ with gr.Blocks(
                 student_report_box = gr.Textbox(label="Report", lines=10, interactive=False)
 
 
+
+
+
 # ---  Course Tab --- #
     with gr.Tab("📘 Courses"):
         with gr.Row():
@@ -776,9 +786,9 @@ with gr.Blocks(
                     cancel_delete_course_btn = gr.Button("Cancel")
 
             
-            gr.Markdown("#### 👥 Eingeschriebene Studierende")
+            gr.Markdown("#### 👥 Enrolled Students")
             enrolled_students_table = gr.Dataframe(
-                headers=["Studierende/r", "Punkte", "Note", "Status"], interactive=False
+                headers=["Students", "Score", "Grade", "Status"], interactive=False
             )
 
         gr.Markdown("### Course Statistics (Text Report)")
@@ -848,7 +858,7 @@ with gr.Blocks(
             )
             report_format = gr.Radio(["Text", "CSV"], label="Format", value="Text")
         with gr.Row():
-            dd_report_student = gr.Dropdown(label="Studients (for student report)", choices=[])
+            dd_report_student = gr.Dropdown(label="Students (for student report)", choices=[])
             dd_report_course = gr.Dropdown(label="Course (for Course report)", choices=[])
         generate_report_btn = gr.Button("📄 Generate Report", variant="primary")
         report_output = gr.Textbox(label="Preview", lines=16, interactive=False)
@@ -878,7 +888,7 @@ with gr.Blocks(
         students_table, dd_view_student, dd_grade_student, dd_report_student,
         courses_table, dd_view_course, dd_grade_course, dd_report_course,
         grades_table,
-        dash_summary, dash_top_table, dash_risk_table, dash_chart,
+        dash_summary, dash_top_table, dash_risk_table, dash_chart
     ]
 
 
