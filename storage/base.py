@@ -20,7 +20,7 @@ class GradeStore(ABC):
         ...
 
     @abstractmethod
-    def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> None:
+    def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> Grade:
         ...
 
 
