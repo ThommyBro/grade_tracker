@@ -13,6 +13,10 @@ class Course:
                 raise ValueError(f"Check your max grade!")
             if not 0 < self.passing_grade <= self.max_grade:
                  raise ValueError(f"Check your passing grade!")
+            if not self.course_id:
+                raise ValueError("Course ID must not be empty")
+            if not self.name:
+                raise ValueError("Course name must not be empty")
               
 
         def __eq__(self, other):
