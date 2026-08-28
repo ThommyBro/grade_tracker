@@ -213,11 +213,6 @@ class GradeBook:
         for c in data.get("courses", []):
             book.add_course(Course(**c))
         for g in data.get("grades", []):
-            # record_grade() kennt kein grade_id-Argument (die ID wird beim
-            # Speichern automatisch NEU vergeben) – deshalb entfernen wir
-            # sie hier aus einer KOPIE des dicts, bevor wir **g auspacken.
-            # dict(g) statt g.pop(...) direkt, damit wir nicht versehentlich
-            # das Original-dict in `data` verändern.
             grade_data = dict(g)
             grade_data.pop("grade_id", None)
             book.add_grade(**grade_data)
@@ -225,53 +220,7 @@ class GradeBook:
 
 
 
-
-
-
-######################## MAIN() ########################
-def main():
-    #- create gradebook
-    gbook = GradeBook()
-
-    #- create students
-    s1 = Student("12345","t", "b","some.student@mit.com")
-    s2 = Student("23456","a", "b","ab@sample.com")
-    s3 = Student("34567","g","z","abc@cba.bac")
-    s4 = Student("45678","Anna", "Alpha", "anna@home.de")
-    s5 = Student("56789","Benno", "Beta", "benno@home.com")
-    s7 = Student("67891","Benno", "der Zweite", "benno.zwei@mail.com")
-    s6 = Student("78912","Celine","Gamma","123@test.com")
-
-    #- create courses
-    c1 = Course("101", "QM1")
-    c2 = Course("102", "Python classics")
-    c3 = Course("103","Higher Category Theory", 100.0, 75)
-    c4  = Course("104", "QM2", 100, 50)
-
-    #- register students
-    gbook.add_student(s1)
-    gbook.add_student(s2)
-    gbook.add_student(s3)
-    gbook.add_student(s4)
-    gbook.add_student(s5)
-    gbook.add_student(s6)
-    gbook.add_student(s7)
-
-    #- register courses
-    gbook.add_course(c1)
-    gbook.add_course(c2)
-    gbook.add_course(c3)
-    gbook.add_course(c4)
-
-   # print(gbook.students)
-
-
  
     
     
 
-
-
-
-if __name__ == "__main__":
-    main()

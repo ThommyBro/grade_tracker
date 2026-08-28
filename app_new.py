@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import os
 import tempfile
@@ -14,6 +16,8 @@ from reports.text_report import TextReportGenerator
 from storage.sqlite_store import GradeDataBase
 
 from exceptions import *
+from persistence import *
+
 
 import gradio as gr
 #import matplotlib
@@ -516,7 +520,8 @@ def import_csv_handler(file):
         return "Choose a CSV File first."
     book = get_gradebook()
     path = file.name if hasattr(file, "name") else file
-    report = persistence.import_csv(book, path)
+    report = import_csv(book,path)
+    #persistence.import_csv(book, path)
     return str(report)
 
 
@@ -590,6 +595,7 @@ def close_grade_panel_handler():
 # ======================================================================== #
 # DEMO Data Generator
 # ======================================================================== #
+
 def load_demo_data_handler():
     book = get_gradebook()
     demo_students = [
@@ -639,7 +645,6 @@ def load_demo_data_handler():
         except (ValueError, StudentNotFoundError, CourseNotFoundError):
             pass
     gr.Info("✅ Demo-Data loaded")
-    #return "✅ Demo-Data loaded"
 
 # ======================================================================== #
 # Reports
@@ -650,12 +655,12 @@ def generate_report_handler(report_type, format_, student_id, course_id):
     suffix = "txt" if format_ == "Text" else "csv"
 
     try:
-        if report_type == "Student report":
+        if report_type == "Student Report":
             if not student_id:
                 return "Please choose a student", None
             content = generator.generate_student_report(student_id, book)
             filename = f"student_{student_id}.{suffix}"
-        elif report_type == "Course report":
+        elif report_type == "Course Report":
             if not course_id:
                 return "Please choose a Course", None
             content = generator.generate_course_report(course_id, book)
@@ -664,7 +669,8 @@ def generate_report_handler(report_type, format_, student_id, course_id):
             content = generator.generate_summary_report(book)
             filename = f"summary.{suffix}"
     except (StudentNotFoundError, CourseNotFoundError) as exc:
-        return f"❌ Error: {exc}", None
+        gr.Info(f"❌ Error: {exc}",)
+        return None
 
     out_dir = Path(tempfile.gettempdir()) / "grade_tracker_reports"
     out_dir.mkdir(exist_ok=True)
@@ -786,24 +792,42 @@ with gr.Blocks(
                     cancel_delete_course_btn = gr.Button("Cancel")
 
             
-            gr.Markdown("#### 👥 Enrolled Students")
-            enrolled_students_table = gr.Dataframe(
-                headers=["Students", "Score", "Grade", "Status"], interactive=False
-            )
+            # gr.Markdown("#### 👥 Enrolled Students")
+            # enrolled_students_table = gr.Dataframe(
+            #     headers=["Students", "Score", "Grade", "Status"], interactive=False
+            # )
 
         gr.Markdown("### Course Statistics (Text Report)")
         with gr.Row():
-            dd_view_course = gr.Dropdown(label="Course", choices=[])
-            view_course_btn = gr.Button("Show Statistics")
+            with gr.Column(scale=1):
+                dd_view_course = gr.Dropdown(label="Course", choices=[])
+                view_course_btn = gr.Button("Show Statistics")
+            with gr.Column(scale=2):
+                pass
         course_report_box = gr.Textbox(label="Report", lines=10, interactive=False)
 
 
 # --- Grade Tab --- #
-    with gr.Tab("📝 Grades"):
-        gr.Markdown("### Add Grade")
+    with gr.Tab("📝 Grades") as gradeTab:
+        
+        gradeTab.select(fn=full_refresh,)
+        
+        
         with gr.Row():
-            dd_grade_student = gr.Dropdown(label="Students", choices=[])
-            dd_grade_course = gr.Dropdown(label="Course", choices=[])
+
+            with gr.Column():
+                gr.Markdown("### Add Grade")
+                with gr.Row():
+                    dd_grade_student = gr.Dropdown(label="Students", choices=[])
+                    dd_grade_course = gr.Dropdown(label="Course", choices=[])
+
+            with gr.Column():
+                gr.Markdown("### Import Grades")
+                with gr.Accordion("CSV-Import (student_id,course_id,score,date[,notes])", open=False):
+                    csv_file = gr.File(label="CSV-File", file_types=[".csv"])
+                    import_csv_btn = gr.Button("CSV import")
+                    import_csv_status = gr.Textbox(label="Import-Result", lines=6, interactive=False)
+
         # Feature: zeigt live die Punktegrenzen des gewählten Kurses an.
         course_limit_hint = gr.Markdown()
         with gr.Row():
@@ -818,6 +842,7 @@ with gr.Blocks(
             headers=["ID", "Date", "Students", "Course", "Score", "Grade", "Status", "Notes"],
             interactive=False,
         )
+        
         gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
 
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_grade_panel:
@@ -842,33 +867,47 @@ with gr.Blocks(
                     confirm_delete_grade_btn = gr.Button("✅ Yes, delete permanently", variant="stop")
                     cancel_delete_grade_btn = gr.Button("Cancel")
 
-        with gr.Accordion("CSV-Import (student_id,course_id,score,date[,notes])", open=False):
-            csv_file = gr.File(label="CSV-File", file_types=[".csv"])
-            import_csv_btn = gr.Button("CSV import")
-            import_csv_status = gr.Textbox(label="Import-Result", lines=6, interactive=False)
+        
 
 
     # --- Reports Tab --- #
-    with gr.Tab("📄 Reports"):
+    with gr.Tab("📄 Reports") as report_tab:
         with gr.Row():
             report_type = gr.Radio(
-                ["Student Report", "Course Report", "Summary"],
+                ["Summary", "Student Report", "Course Report"],
                 label="Report Type",
                 value="Summary",
             )
-            report_format = gr.Radio(["Text", "CSV"], label="Format", value="Text")
+            
         with gr.Row():
-            dd_report_student = gr.Dropdown(label="Students (for student report)", choices=[])
-            dd_report_course = gr.Dropdown(label="Course (for Course report)", choices=[])
-        generate_report_btn = gr.Button("📄 Generate Report", variant="primary")
+            dd_report_student = gr.Dropdown(label="Students (for student report)", choices=[], visible=False)
+            dd_report_course = gr.Dropdown(label="Course (for Course report)", choices=[], visible=False)
+        generate_report_btn = gr.Button("📄 Show Preview Report", variant="primary")
         report_output = gr.Textbox(label="Preview", lines=16, interactive=False)
-        report_file = gr.File(label="Download")
+        
+        with gr.Row():
+            report_format = gr.Radio(["Text", "CSV"], label="Choose file format for download", value="Text")
+            report_file = gr.File(label="Download")
+
+        # Show the appropriate dropdown depending on report type
+        def update_report_dropdowns(report_type):
+            return (gr.update(visible=report_type == "Student Report"),
+                    gr.update(visible=report_type == "Course Report"),
+            )
+
+        report_type.change(
+            fn=update_report_dropdowns,
+            inputs=report_type,
+            outputs=[dd_report_student, dd_report_course,],
+        )
+
+        report_tab.select(fn=generate_report_handler )
 
 
     # --- Dashboard Tab --- #
-    with gr.Tab("📊 Dashboard"):
+    with gr.Tab("📊 Dashboard") as dash_tab:
         demo_data_btn = gr.Button("🧪 Load Demo Data")
-        demo_data_status = gr.Textbox(label="Status", interactive=False)
+        #demo_data_status = gr.Textbox(label="Status", interactive=False)
         dash_summary = gr.Markdown()
         with gr.Row():
             dash_top_table = gr.Dataframe(
@@ -880,6 +919,7 @@ with gr.Blocks(
                 interactive=False,
             )
         dash_chart = gr.Plot(label="Grade Distritbution")
+        
 
 
 # --- Wiring: Button Click to corresponding functions --- #
@@ -964,7 +1004,7 @@ with gr.Blocks(
         outputs=[
             edit_course_panel, edit_course_id_display, edit_course_name,
             edit_course_max_grade, edit_course_passing_grade, delete_course_confirm,
-            enrolled_students_table,
+            #enrolled_students_table,
         ],
     )
 
@@ -1049,7 +1089,8 @@ with gr.Blocks(
 
     # ---- Dashboard & Demo-Data ---- #
     demo_data_btn.click(
-        load_demo_data_handler, outputs=[demo_data_status]
+        load_demo_data_handler, 
+        #outputs=[demo_data_status]
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
 
     # Refresh on first load
