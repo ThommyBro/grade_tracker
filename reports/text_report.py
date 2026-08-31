@@ -19,19 +19,21 @@ class TextReportGenerator(ReportGenerator):
     def generate_student_report(self, student_id: str, gradebook: "GradeBook") -> str:
         student = gradebook.students[student_id]
         grades = gradebook.get_student_grades(student_id)
+        
 
         lines = [f"Grade report: {student.full_name} ({student.student_id})", "=" * 56]
         if not grades:
             lines.append("No grades recorded.")
             return "\n".join(lines)
 
-        lines.append(f"{'Course':<22}{'Score':>10}{'Grade':>8}{'Status':>16}")
-        lines.append("-" * 56)
+        lines.append(f"{'Course':<30}{'Score':<25}{'Grade':<20}{'Status':<20}")
+        lines.append("-" * 83)
         for g in grades:
             status = "passed" if g.is_passing else "failed"
-            points = f"{g.score:.1f}/{g.course.max_grade:.0f}"
-            lines.append(f"{g.course.name:<22}{points:>10}{g.letter_grade:>8}{status:>16}")
-        lines.append("-" * 56)
+            score = f"{g.score:.1f}/{g.course.max_grade:.0f}"
+            
+            lines.append(f"{g.course.name:<30}{score:<25}{g.letter_grade:<20}{status:<20}")
+        lines.append("-" * 83)
         lines.append(f"Mean: {gradebook.student_average(student_id):.1f}%")
         return "\n".join(lines)
 
@@ -44,13 +46,13 @@ class TextReportGenerator(ReportGenerator):
             lines.append("No grades recorded.")
             return "\n".join(lines)
 
-        lines.append(f"{'Studend':<28}{'Score':>10}{'Grade':>8}")
+        lines.append(f"{'Studend':<30}{'Score':>15}{'Grade':>10}")
         lines.append("-" * 56)
         for g in grades:
             points = f"{g.score:.1f}/{course.max_grade:.0f}"
-            lines.append(f"{g.student.full_name:<28}{points:>10}{g.letter_grade:>8}")
+            lines.append(f"{g.student.full_name:<30}{points:>15}{g.letter_grade:>10}")
         lines.append("-" * 56)
-        lines.append(f"Course Mean: {gradebook.course_average(course_id):.2f}")
+        lines.append(f"Course Average: {gradebook.course_average(course_id):.2f}")
         lines.append(f"Passing Rate:      {gradebook.course_pass_rate(course_id):.1f}%")
 
         distribution = Counter(g.letter_grade for g in grades)
