@@ -7,6 +7,8 @@ from grade_db.course_repository import CourseRepository
 from grade_db.student_repository import StudentRepository
 from grade_db.grade_repository import GradeRepository
 
+from exceptions import *
+
 from dataclasses import dataclass
 
 
@@ -112,3 +114,53 @@ def populate_database(student_repo: StudentRepository, course_repo: CourseReposi
         grade_repo.add(grade)
         
 
+def load_demo_data_handler():
+    book = get_gradebook()
+    demo_students = [
+        ("s1", "Anna", "Alpha", "anna@uni.com"),
+        ("s2", "Ben", "Beta", "ben@uni.com"),
+        ("s3", "Clara", "Gamma", "clara@uni.com"),
+        ("s4", "David", "Delta", "david@uni.com"),
+        ("s5", "Emil", "Epsilon", "emil@uni.com"),
+
+    ]
+    demo_courses = [
+        ("c1", "Category Theory", 100.0, 50.0),
+        ("c2", "Python 101", 100.0, 60.0),
+        ("c3", "QM 1", 100, 50),
+        ("c4", "Lagrangian Fun", 100, 50),
+    ]
+    demo_grades = [
+        ("s1", "c1", 92, "2026-01-15"),
+        ("s1", "c2", 17, "2026-01-20"),
+        ("s1", "c3", 95, "2026-01-25"),
+        ("s2", "c1", 55, "2026-01-15"),
+        ("s2", "c2", 8, "2026-01-20"),
+        ("s3", "c3", 85, "2026-01-25"),
+        ("s3", "c1", 78, "2026-01-15"),
+        ("s3", "c2", 12, "2026-01-20"),
+        ("s3", "c3", 17, "2026-01-25"),
+        ("s4", "c1", 41, "2026-01-15"),
+        ("s4", "c2", 6, "2026-01-20"),
+        ("s4", "c3", 51, "2026-01-25"),
+        ("s5", "c1", 55, "2026-01-25"),
+        ("s5", "c2", 99, "2026-01-20"),
+        ("s5", "c4", 100, "2026-01-25"),
+    ]
+    for sid, fn, ln, email in demo_students:
+        try:
+            book.add_student(Student(sid, fn, ln, email))
+        except DuplicateEntryError:
+            pass
+    for cid, name, max_g, pass_g in demo_courses:
+        try:
+            book.add_course(Course(cid, name, max_g, pass_g))
+        except DuplicateEntryError:
+            pass
+    for sid, cid, score, grade_date in demo_grades:
+        try:
+            book.add_grade(sid, cid, score, grade_date)
+        except (ValueError, StudentNotFoundError, CourseNotFoundError):
+            pass
+    #gr.Info("✅ Demo-Data loaded")
+    #return "✅ Demo-Data loaded"
