@@ -51,6 +51,8 @@ LETTERS = ("A", "B", "C", "D", "F")
 
 
 
+
+
 # ======================================================================== #
 #       Header
 # ======================================================================== #
@@ -94,6 +96,7 @@ def build_header():
                         </div>
                         """
                     )
+
 # ======================================================================== #
 #       Tables
 # Use get_all_... functions
@@ -134,17 +137,17 @@ def _grades_table_data(book: GradeBook, limit: int = 50) -> list[list]:
     ]
 
 
-def _enrolled_students_table(book: GradeBook, course_id: str) -> list[list]:
-    """Studierende, die in einem Kurs mindestens eine Note haben ("eingeschrieben")."""
-    try:
-        grades = book.get_course_grades(course_id)
-    except CourseNotFoundError:
-        return []
-    rows = sorted(grades, key=lambda g: g.student.full_name)
-    return [
-        [g.student.full_name, g.score, g.letter_grade, "bestanden" if g.is_passing else "nicht bestanden"]
-        for g in rows
-    ]
+# def _enrolled_students_table(book: GradeBook, course_id: str) -> list[list]:
+#     """Studierende, die in einem Kurs mindestens eine Note haben ("eingeschrieben")."""
+#     try:
+#         grades = book.get_course_grades(course_id)
+#     except CourseNotFoundError:
+#         return []
+#     rows = sorted(grades, key=lambda g: g.student.full_name)
+#     return [
+#         [g.student.full_name, g.score, g.letter_grade, "bestanden" if g.is_passing else "nicht bestanden"]
+#         for g in rows
+#     ]
 
 
 def _top_students_table(book: GradeBook) -> list[list]:
@@ -175,7 +178,7 @@ def _grade_distribution_figure(book: GradeBook):
     values = [counts.get(letter, 0) for letter in LETTERS]
 
     fig, ax = plt.subplots(figsize=(5, 3.2))
-    colors = ["#2e7d32", "#66bb6a", "#fdd835", "#fb8c00", "#e53935"]
+    colors =["#A3B19B", "#5A6B7C", "#D4A5A5", "#8A7987", "#4A4E59"]
     bars = ax.bar(LETTERS, values, color=colors)
     ax.set_ylabel("Grade Count")
     ax.set_title("Grade Distribution")
@@ -285,7 +288,7 @@ def on_student_row_select(evt: gr.SelectData, current_table):
     if not rows or row_idx is None or row_idx >= len(rows):
         return gr.Group(visible=False), "", "", "", "", gr.Group(visible=False)
 
-    student_id = str(rows[row_idx][0])  # Spalte 0 = student_id (str(), falls Gradio/pandas daraus eine Zahl gemacht hat)
+    student_id = str(rows[row_idx][0])  
     book = get_gradebook()
     try:
         s = book.store.get_student(student_id)
@@ -298,7 +301,7 @@ def on_student_row_select(evt: gr.SelectData, current_table):
         s.first_name,
         s.last_name,
         s.email,
-        gr.Group(visible=False),  # eine evtl. offene Lösch-Bestätigung von vorher wieder einklappen
+        gr.Group(visible=False),  
     )
 
 
@@ -308,15 +311,14 @@ def save_student_handler(student_id, first_name, last_name, email):
         return "❌ No Student selected.", gr.Group(visible=True)
     book = get_gradebook()
     try:
-        updated = Student(
-            student_id, (first_name or "").strip(), (last_name or "").strip(), (email or "").strip()
-        )
-        book.update_student(updated)
-        gr.Info(f"✅ '{updated.full_name}' was updated.")
-        return f"gr.Group(visible=False)"
+        update = Student(student_id, (first_name or "").strip(), (last_name or "").strip(), (email or "").strip())
+        book.update_student(update)
+        gr.Info(f"✅ '{update.full_name}' was updated.")
+        return gr.Group(visible=False)
     
     except (ValueError, StudentNotFoundError) as exc:
-        return f"❌ Error: {exc}", gr.Group(visible=True)
+        gr.Info(f"❌ Error: {exc}")
+        return gr.Group(visible=True)
 
 
 def request_delete_student_handler(student_id):
@@ -429,9 +431,9 @@ def save_course_handler(course_id, name, max_grade, passing_grade):
         return "❌ No Course selected.", gr.Group(visible=True)
     book = get_gradebook()
     try:
-        updated = Course(course_id, (name or "").strip(), float(max_grade), float(passing_grade))
-        book.update_course(updated) # update course does the real check up
-        gr.Info(f"✅ Course '{updated.name}' was updated.")
+        update = Course(course_id, (name or "").strip(), float(max_grade), float(passing_grade))
+        book.update_course(update) # update course does the real check up
+        gr.Info(f"✅ Course '{update.name}' was updated.")
         return gr.Group(visible=False)
     except (ValueError, CourseNotFoundError, TypeError) as exc:
         gr.Info(f"❌ Error: {exc}")
@@ -686,7 +688,7 @@ with gr.Blocks(
     title="Grade Tracker",
     #theme=gr.Theme.from_hub("KevinGeng/Laronix"),
     #theme=gr.Theme.from_hub("Maani/MonoNeo"),
-    theme=gr.themes.Ocean()
+    #theme=gr.themes.Ocean()
     #css=CUSTOM_CSS,
 ) as demo:
     #gr.Markdown("# 📚 Grade Tracker", elem_classes=["app-title"])
@@ -906,7 +908,9 @@ with gr.Blocks(
 
     # --- Dashboard Tab --- #
     with gr.Tab("📊 Dashboard") as dash_tab:
-        demo_data_btn = gr.Button("🧪 Load Demo Data")
+        book = get_gradebook()
+        visible = book.students["s1"] is None
+        demo_data_btn = gr.Button("🧪 Load Demo Data", visible=visible)
         #demo_data_status = gr.Textbox(label="Status", interactive=False)
         dash_summary = gr.Markdown()
         with gr.Row():
@@ -1101,5 +1105,5 @@ with gr.Blocks(
 
 if __name__ == "__main__":
     #demo.launch()
-    demo.launch(server_name="127.0.0.1", server_port=7860)
+    demo.launch(server_name="127.0.0.1", server_port=7860, theme=gr.themes.Ocean(), )
 
