@@ -17,7 +17,7 @@ class TextReportGenerator(ReportGenerator):
     """3 Methods for the reports in a formated TXT format."""
 
     def generate_student_report(self, student_id: str, gradebook: "GradeBook") -> str:
-        student = gradebook.students[student_id]
+        student = gradebook.get_student(student_id)
         grades = gradebook.get_student_grades(student_id)
         
 
@@ -38,7 +38,7 @@ class TextReportGenerator(ReportGenerator):
         return "\n".join(lines)
 
     def generate_course_report(self, course_id: str, gradebook: "GradeBook") -> str:
-        course = gradebook.courses[course_id]
+        course = gradebook.get_course(course_id)
         grades = gradebook.get_course_grades(course_id)
 
         lines = [f"Course report: {course.name} ({course.course_id})", "=" * 56]

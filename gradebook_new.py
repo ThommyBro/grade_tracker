@@ -60,6 +60,12 @@ class GradeBook:
     def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "",) -> Grade:
         return self.store.add_grade(student_id, course_id, score, date, notes)
 
+    def get_student(self, student_id: str) -> Student:
+        return self.store.get_student(student_id)
+
+    def get_course(self, course_id: str) -> Course:
+        return self.store.get_course(course_id)
+
     def get_student_grades(self, student_id: str) -> list[Grade]:
         return self.store.get_student_grades(student_id)
 

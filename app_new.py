@@ -99,7 +99,7 @@ def build_header():
 
 # ======================================================================== #
 #       Tables
-# Use get_all_... functions
+# Uses get_all_... functions
 # ======================================================================== #
 def _students_table_data(book: GradeBook) -> list[list]:
     rows = []
@@ -120,8 +120,11 @@ def _courses_table_data(book: GradeBook) -> list[list]:
     return rows
 
 
-def _grades_table_data(book: GradeBook, limit: int = 50) -> list[list]:
-    grades = sorted(book.store.get_all_grades(), key=lambda g: g.date, reverse=True)[:limit]
+def _grades_table_data(book: GradeBook, 
+                       #limit: int = 50
+                       ) -> list[list]:
+    grades = sorted(book.store.get_all_grades(), key=lambda g: g.date, reverse=True)
+    #[:limit]
     return [
         [
             g.grade_id,
@@ -153,7 +156,7 @@ def _grades_table_data(book: GradeBook, limit: int = 50) -> list[list]:
 def _top_students_table(book: GradeBook) -> list[list]:
     return [
         [s.full_name, f"{avg:.1f}%"] 
-        for s, avg in book.top_students(n=10)
+        for s, avg in book.top_students(n=5)
     ]
 
 
@@ -485,10 +488,6 @@ def view_course_report_handler(course_id):
     return TEXT_GEN.generate_course_report(course_id, get_gradebook())
 
 
-
-# ======================================================================== #
-# Button Handler: Grade CRUD Action
-# ======================================================================== #
 def update_course_hint_handler(course_id):
     if not course_id:
         return ""
@@ -499,6 +498,11 @@ def update_course_hint_handler(course_id):
         return ""
     return f"ℹ️ **{c.name}**: max. {c.max_grade:.0f} Score · Passing Grade {c.passing_grade:.0f}"
 
+
+
+# ======================================================================== #
+# Button Handler: Grade CRUD Action
+# ======================================================================== #
 
 def record_grade_handler(student_id, course_id, score, grade_date, notes):
     if not student_id or not course_id:
@@ -512,9 +516,11 @@ def record_grade_handler(student_id, course_id, score, grade_date, notes):
             f"✅ Grade recorded: {grade.student.full_name} – {grade.course.name}: "
             f"{grade.score} ({grade.letter_grade})"
         )
-        return msg, None, None, ""
+        gr.Info(msg)
+        return None, None, ""
     except (ValueError, StudentNotFoundError, CourseNotFoundError, TypeError) as exc:
-        return f"❌ Error: {exc}", student_id, score, notes
+        gr.Info(f"❌ Error: {exc}")
+        return student_id, score, notes
 
 
 def import_csv_handler(file):
@@ -706,6 +712,7 @@ with gr.Blocks(
                 students_table = gr.Dataframe(
                     headers=["ID", "Firstname", "Lastname", "E-Mail", "Ø (%)"],
                     interactive=False,
+                    max_height=320
                 )
                 gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
             with gr.Column(scale=1):
@@ -715,7 +722,6 @@ with gr.Blocks(
                 new_last_name = gr.Textbox(label="Lastname")
                 new_email = gr.Textbox(label="E-Mail")
                 add_student_btn = gr.Button("➕ Add", variant="primary")
-                #add_student_status = gr.Textbox(label="Status", interactive=False)
 
 
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_student_panel:
@@ -727,14 +733,9 @@ with gr.Blocks(
             edit_student_email = gr.Textbox(label="E-Mail")
             with gr.Row():
                 save_student_btn = gr.Button("💾 Save", variant="primary")
-                # Test for spacing between Buttons
-                with gr.Column(scale=1, visible=True):
-                    pass 
                 delete_student_btn = gr.Button("🗑️ Delete", variant="stop")
-                with gr.Column(scale=1, visible=True):
-                    pass 
                 close_student_panel_btn = gr.Button("✖ Close")
-            #edit_student_status = gr.Textbox(label="Status", interactive=False)
+            
 
             with gr.Group(visible=False, elem_classes=["confirm-panel"]) as delete_student_confirm:
                 delete_student_warning = gr.Markdown()
@@ -763,6 +764,7 @@ with gr.Blocks(
                 courses_table = gr.Dataframe(
                     headers=["ID", "Name", "Max. Score", "Passing Score", "Ø", "Passing Quota"],
                     interactive=False,
+                    max_height=320,
                 )
                 gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
             with gr.Column(scale=1):
@@ -772,7 +774,7 @@ with gr.Blocks(
                 new_max_grade = gr.Number(label="Max Score", value=100)
                 new_passing_grade = gr.Number(label="Passing grade", value=50)
                 add_course_btn = gr.Button("➕ Add", variant="primary")
-                #add_course_status = gr.Textbox(label="Status", interactive=False)
+                
 
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_course_panel:
             gr.Markdown("### ✏️ Edit Course")
@@ -794,10 +796,10 @@ with gr.Blocks(
                     cancel_delete_course_btn = gr.Button("Cancel")
 
             
-            # gr.Markdown("#### 👥 Enrolled Students")
-            # enrolled_students_table = gr.Dataframe(
-            #     headers=["Students", "Score", "Grade", "Status"], interactive=False
-            # )
+            gr.Markdown("#### 👥 Enrolled Students")
+            enrolled_students_table = gr.Dataframe(
+                headers=["Students", "Score", "Grade", "Status"], interactive=False
+            )
 
         gr.Markdown("### Course Statistics (Text Report)")
         with gr.Row():
@@ -811,40 +813,38 @@ with gr.Blocks(
 
 # --- Grade Tab --- #
     with gr.Tab("📝 Grades") as gradeTab:
-        
-        gradeTab.select(fn=full_refresh,)
-        
-        
         with gr.Row():
-
-            with gr.Column():
+            with gr.Column(scale=2):
                 gr.Markdown("### Add Grade")
-                with gr.Row():
-                    dd_grade_student = gr.Dropdown(label="Students", choices=[])
-                    dd_grade_course = gr.Dropdown(label="Course", choices=[])
+                with gr.Group():
+                    with gr.Row():
+                        dd_grade_student = gr.Dropdown(label="Students", choices=[])
+                        dd_grade_course = gr.Dropdown(label="Course", choices=[])
+                    
+                    course_limit_hint = gr.Markdown()
+                    with gr.Row():
+                        grade_score = gr.Number(label="Grade Score")
+                        grade_date = gr.Textbox(label="Date (YYYY-MM-DD)", value=date.today().isoformat())
+                    with gr. Row():
+                        grade_notes = gr.Textbox(label="Notes (optional)")
+                    
+                    record_grade_btn = gr.Button("✅ Add Grade", variant="primary",)
 
-            with gr.Column():
+            with gr.Column(scale=1):
                 gr.Markdown("### Import Grades")
                 with gr.Accordion("CSV-Import (student_id,course_id,score,date[,notes])", open=False):
                     csv_file = gr.File(label="CSV-File", file_types=[".csv"])
                     import_csv_btn = gr.Button("CSV import")
                     import_csv_status = gr.Textbox(label="Import-Result", lines=6, interactive=False)
 
-        # Feature: zeigt live die Punktegrenzen des gewählten Kurses an.
-        course_limit_hint = gr.Markdown()
-        with gr.Row():
-            grade_score = gr.Number(label="Grade Score")
-            grade_date = gr.Textbox(label="Date (YYYY-MM-DD)", value=date.today().isoformat())
-            grade_notes = gr.Textbox(label="Notes (optional)")
-        record_grade_btn = gr.Button("✅ Add Grade", variant="primary")
-        #record_grade_status = gr.Textbox(label="Status", interactive=False)
-
-        gr.Markdown("### Last recorded Grades")
-        grades_table = gr.Dataframe(
-            headers=["ID", "Date", "Students", "Course", "Score", "Grade", "Status", "Notes"],
-            interactive=False,
-        )
-        
+        #with gr.Row():
+        with gr.Column():
+            gr.Markdown("### Recorded Grades")
+            grades_table = gr.Dataframe(
+                headers=["ID", "Date", "Students", "Course", "Score", "Grade", "Status", "Notes"],
+                interactive=False,
+                max_height=320,
+            )
         gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
 
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_grade_panel:
@@ -861,7 +861,7 @@ with gr.Blocks(
                 save_grade_btn = gr.Button("💾 Save", variant="primary")
                 delete_grade_btn = gr.Button("🗑️ Delete", variant="stop")
                 close_grade_panel_btn = gr.Button("✖ Close")
-            #edit_grade_status = gr.Textbox(label="Status", interactive=False)
+            
 
             with gr.Group(visible=False, elem_classes=["confirm-panel"]) as delete_grade_confirm:
                 delete_grade_warning = gr.Markdown()
