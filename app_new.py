@@ -65,8 +65,8 @@ def build_header():
                     gr.Image(
                         "images/logo.png",
                         container=False,
-                        width=65,
-                        height=65,
+                        width=80,
+                        height=80,
                         interactive=False,
                         buttons=[],
                         show_label=False
@@ -76,7 +76,7 @@ def build_header():
                 with gr.Column(scale=4):
                     gr.Markdown(
                         """
-                        <div style="padding-top: 3px;">
+                        <div style="padding-top: 2px;">
                             <h1 style="margin-bottom: 0;">
                                 Grade Tracker
                             </h1>
@@ -167,15 +167,18 @@ def _at_risk_table(book: GradeBook) -> list[list]:
     ]
     #book.student_average(s.student_id):.1f
 
-def _dashboard_summary_md(book: GradeBook) -> str:
-    return (
-        "### Overview\n\n"
-        f"- **Students:** {len(book.students)}\n"
-        f"- **Courses:** {len(book.courses)}\n"
-        f"- **Grades:** {len(book.grades)}\n"
-    )
+# def _dashboard_summary_md(book: GradeBook) -> str:
+#     return (
+#         "### Overview\n\n"
+#         f"- **Students:** {len(book.students)}\n"
+#         f"- **Courses:** {len(book.courses)}\n"
+#         f"- **Grades:** {len(book.grades)}\n"
+#     )
 
 
+# ======================================================================== #
+#       Dashboard Graphs
+# ======================================================================== #
 def _grade_distribution_figure(book: GradeBook):
     counts = Counter(g.letter_grade for g in book.store.get_all_grades())
     values = [counts.get(letter, 0) for letter in LETTERS]
@@ -186,6 +189,31 @@ def _grade_distribution_figure(book: GradeBook):
     ax.set_ylabel("Grade Count")
     ax.set_title("Grade Distribution")
     ax.set_ylim(0, max(values + [1]) + 1)
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.05,
+            str(value),
+            ha="center",
+            va="bottom",
+        )
+    fig.tight_layout()
+    return fig
+
+def _top_courses_grade_count_figure(book: GradeBook):
+    counts = Counter((g.course.name, g.course.course_id) for g in book.store.get_all_grades())
+    top_courses = counts.most_common(5)
+
+    labels = [f"{course_name} ({course_id})" for (course_name, course_id), _ in top_courses]
+    values = [count for _, count in top_courses]
+
+    fig, ax = plt.subplots(figsize=(6, 3.5))
+    bars = ax.bar(labels, values, color="#5A6B7C")
+
+    ax.set_ylabel("Grade Count")
+    ax.set_title("Top 5 Courses by Number of Grades")
+    ax.set_ylim(0, max(values + [1]) + 1)
+    ax.tick_params(axis="x", rotation=45)
     for bar, value in zip(bars, values):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -241,10 +269,11 @@ def full_refresh():
         gr.Dropdown(choices=c_choices),
         gr.Dropdown(choices=c_choices),
         _grades_table_data(book),
-        _dashboard_summary_md(book),
+       # _dashboard_summary_md(book),
         _top_students_table(book),
         _at_risk_table(book),
         _grade_distribution_figure(book),
+        _top_courses_grade_count_figure(book),
     )
 
 
@@ -425,7 +454,7 @@ def on_course_row_select(evt: gr.SelectData, current_table):
         c.max_grade,
         c.passing_grade,
         gr.Group(visible=False),
-        _enrolled_students_table(book, course_id),
+        #_enrolled_students_table(book, course_id),
     )
 
 
@@ -796,10 +825,10 @@ with gr.Blocks(
                     cancel_delete_course_btn = gr.Button("Cancel")
 
             
-            gr.Markdown("#### 👥 Enrolled Students")
-            enrolled_students_table = gr.Dataframe(
-                headers=["Students", "Score", "Grade", "Status"], interactive=False
-            )
+            # gr.Markdown("#### 👥 Enrolled Students")
+            # enrolled_students_table = gr.Dataframe(
+            #     headers=["Students", "Score", "Grade", "Status"], interactive=False
+            # )
 
         gr.Markdown("### Course Statistics (Text Report)")
         with gr.Row():
@@ -832,10 +861,11 @@ with gr.Blocks(
 
             with gr.Column(scale=1):
                 gr.Markdown("### Import Grades")
-                with gr.Accordion("CSV-Import (student_id,course_id,score,date[,notes])", open=False):
+                with gr.Accordion("Choose CSV File", open=False):
                     csv_file = gr.File(label="CSV-File", file_types=[".csv"])
                     import_csv_btn = gr.Button("CSV import")
                     import_csv_status = gr.Textbox(label="Import-Result", lines=6, interactive=False)
+                gr.Markdown("💡 Format: student_id,course_id,score,date[,notes]", elem_classes=["hint-text"])
 
         #with gr.Row():
         with gr.Column():
@@ -875,21 +905,28 @@ with gr.Blocks(
     # --- Reports Tab --- #
     with gr.Tab("📄 Reports") as report_tab:
         with gr.Row():
-            report_type = gr.Radio(
-                ["Summary", "Student Report", "Course Report"],
-                label="Report Type",
-                value="Summary",
-            )
+            report_type = gr.Radio(["Summary", "Student Report", "Course Report"], label="Report Type", value="Summary",)
+            report_format = gr.Radio(["Text", "CSV"], label="Choose file format for download", value="Text")
+            report_file = gr.File(label="Download",height=30)
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                generate_report_btn = gr.Button("📄 Show Preview Report", variant="primary")
+            with gr.Column(scale=2):
+                pass
             
         with gr.Row():
-            dd_report_student = gr.Dropdown(label="Students (for student report)", choices=[], visible=False)
-            dd_report_course = gr.Dropdown(label="Course (for Course report)", choices=[], visible=False)
-        generate_report_btn = gr.Button("📄 Show Preview Report", variant="primary")
-        report_output = gr.Textbox(label="Preview", lines=16, interactive=False)
-        
+            with gr.Column(scale=1):
+                dd_report_student = gr.Dropdown(label="Students (for student report)", choices=[], visible=False)
+                dd_report_course = gr.Dropdown(label="Course (for Course report)", choices=[], visible=False)
+            with gr.Column(scale=2):
+                pass
+
         with gr.Row():
-            report_format = gr.Radio(["Text", "CSV"], label="Choose file format for download", value="Text")
-            report_file = gr.File(label="Download")
+            with gr.Column(scale=2):
+                report_output = gr.Textbox(label="Preview", lines=16, interactive=False)
+            with gr.Column(scale=1):
+                pass
 
         # Show the appropriate dropdown depending on report type
         def update_report_dropdowns(report_type):
@@ -908,21 +945,24 @@ with gr.Blocks(
 
     # --- Dashboard Tab --- #
     with gr.Tab("📊 Dashboard") as dash_tab:
+
+        # get student data to define visibility of 'load demo data' button
         book = get_gradebook()
         visible = book.students["s1"] is None
         demo_data_btn = gr.Button("🧪 Load Demo Data", visible=visible)
-        #demo_data_status = gr.Textbox(label="Status", interactive=False)
-        dash_summary = gr.Markdown()
+       
+        #dash_summary = gr.Markdown()
+        gr.Markdown("### Overview")
         with gr.Row():
-            dash_top_table = gr.Dataframe(
-                headers=["Students", "Mean"], label="🏆 Top Students", interactive=False
-            )
-            dash_risk_table = gr.Dataframe(
-                headers=["Students", "Mean"],
-                label="⚠️ Students at Risk(<60%)",
-                interactive=False,
-            )
-        dash_chart = gr.Plot(label="Grade Distritbution")
+            gr.Textbox(label="Students",value=str(len(book.students)))
+            gr.Textbox(label="Courses",value=str(len(book.courses)))
+            gr.Textbox(label="Grades",value=str(len(book.grades)))
+        with gr.Row():
+            dash_top_table = gr.Dataframe(headers=["Students", "Mean"], label="🏆 Top Students", interactive=False)
+            dash_risk_table = gr.Dataframe(headers=["Students", "Mean"], label="⚠️ Students at Risk(<60%)", interactive=False,)
+        with gr.Row():
+            dash_chart = gr.Plot(label="Grade Distritbution")
+            dash_course_chart = gr.Plot(label="Top 5 Courses by Grade Count")
         
 
 
@@ -932,7 +972,9 @@ with gr.Blocks(
         students_table, dd_view_student, dd_grade_student, dd_report_student,
         courses_table, dd_view_course, dd_grade_course, dd_report_course,
         grades_table,
-        dash_summary, dash_top_table, dash_risk_table, dash_chart
+        #dash_summary, 
+        dash_top_table, dash_risk_table, 
+        dash_chart, dash_course_chart
     ]
 
 
@@ -979,16 +1021,16 @@ with gr.Blocks(
         inputs=[edit_student_id_display],
         outputs=[delete_student_confirm, delete_student_warning],
     )
+
     confirm_delete_student_btn.click(
         confirm_delete_student_handler,
         inputs=[edit_student_id_display],
         outputs=[#edit_student_status, 
             delete_student_confirm, edit_student_panel],
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
+
     cancel_delete_student_btn.click(cancel_delete_student_handler, outputs=[delete_student_confirm])
-    close_student_panel_btn.click(
-        close_student_panel_handler, outputs=[edit_student_panel, delete_student_confirm]
-    )
+    close_student_panel_btn.click(close_student_panel_handler, outputs=[edit_student_panel, delete_student_confirm])
 
     view_student_btn.click(view_student_report_handler, inputs=[dd_view_student], outputs=[student_report_box])
 
@@ -1030,10 +1072,9 @@ with gr.Blocks(
         outputs=[#edit_course_status,
                  delete_course_confirm, edit_course_panel],
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
+
     cancel_delete_course_btn.click(cancel_delete_course_handler, outputs=[delete_course_confirm])
-    close_course_panel_btn.click(
-        close_course_panel_handler, outputs=[edit_course_panel, delete_course_confirm]
-    )
+    close_course_panel_btn.click(close_course_panel_handler, outputs=[edit_course_panel, delete_course_confirm])
 
     view_course_btn.click(view_course_report_handler, inputs=[dd_view_course], outputs=[course_report_box])
 
@@ -1073,16 +1114,16 @@ with gr.Blocks(
         inputs=[edit_grade_id_display],
         outputs=[delete_grade_confirm, delete_grade_warning],
     )
+
     confirm_delete_grade_btn.click(
         confirm_delete_grade_handler,
         inputs=[edit_grade_id_display],
         outputs=[#edit_grade_status, 
                  delete_grade_confirm, edit_grade_panel],
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
+
     cancel_delete_grade_btn.click(cancel_delete_grade_handler, outputs=[delete_grade_confirm])
-    close_grade_panel_btn.click(
-        close_grade_panel_handler, outputs=[edit_grade_panel, delete_grade_confirm]
-    )
+    close_grade_panel_btn.click(close_grade_panel_handler, outputs=[edit_grade_panel, delete_grade_confirm])
 
     # ---- Reports ---- #
     generate_report_btn.click(
