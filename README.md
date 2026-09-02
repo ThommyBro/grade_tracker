@@ -26,6 +26,19 @@ unit testing and a simple Gradio user interface.
 
 ---
 
+
+---
+
+## Features to come
+
+- Enrollment status per Course for students
+- Longterm performance tracking for students
+- Course average scores per term
+- Point System for Courses and complete studies
+
+
+---
+
 ## Project Structure
 
 ```
