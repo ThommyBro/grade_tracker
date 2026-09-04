@@ -35,6 +35,13 @@ unit testing and a simple Gradio user interface.
 - Longterm performance tracking for students
 - Course average scores per term
 - Point System for Courses and complete studies
+- include terms for courses
+
+
+
+## To Do
+
+- Split Full_Refresh and All_refreshed_outputs to simpler categorized functions.
 
 
 ---

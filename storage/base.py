@@ -26,11 +26,11 @@ class GradeStore(ABC):
 
     # --- Get methods --- #
     @abstractmethod
-    def get_student(self, student_id: str) -> Student | None:
+    def get_student(self, student_id: str) -> Student:
         ...    
 
     @abstractmethod
-    def get_course(self, course_id: str) -> Course | None:
+    def get_course(self, course_id: str) -> Course:
         ...
 
     # @abstractmethod

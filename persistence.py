@@ -90,7 +90,7 @@ def import_csv(gradebook: GradeBook, path: str | Path) -> ImportReport:
             gradebook.add_grade(student_id, course_id, score, date, notes)
         except (StudentNotFoundError, CourseNotFoundError, ValueError) as exc:
             report.skipped += 1
-            report.errors.append(f"Zeile {line_number}: {exc}")
+            report.errors.append(f"Line {line_number}: {exc}")
             continue
 
         report.imported += 1
