@@ -116,7 +116,7 @@ def _courses_table_data(book: GradeBook) -> list[list]:
         grades = book.get_course_grades(c.course_id)
         avg = f"{book.course_average(c.course_id):.1f}" if grades else "–"
         pass_rate = f"{book.course_pass_rate(c.course_id):.1f}%" if grades else "–"
-        rows.append([c.course_id, c.name, c.max_grade, c.passing_grade, avg, pass_rate])
+        rows.append([c.course_id, c.name, c.term, c.max_grade, c.passing_grade, avg, pass_rate])
     return rows
 
 
@@ -407,18 +407,18 @@ def view_student_report_handler(student_id):
 # ======================================================================== #
 # Button Handler: Course CRUD Actions
 # ======================================================================== #
-def add_course_handler(course_id, name, max_grade, passing_grade):
+def add_course_handler(course_id, name, term, max_grade, passing_grade):
     book = get_gradebook()
     try:
         book.add_course(
-            Course((course_id or "").strip(), (name or "").strip(), float(max_grade), float(passing_grade))
+            Course((course_id or "").strip(), (name or "").strip(), (term or "").strip(), float(max_grade), float(passing_grade))
         )
         msg = f"✅ Course '{name}' ({course_id}) was added."
         gr.Info(msg)
         return "", "", 100, 50
     except (ValueError, DuplicateEntryError, TypeError) as exc:
         gr.Info(f"❌ Error: {exc}")
-        return course_id, name, max_grade, passing_grade
+        return course_id, name, term, max_grade, passing_grade
 
 
 def filter_courses_handler(query):
@@ -438,19 +438,20 @@ def on_course_row_select(evt: gr.SelectData, current_table):
     rows = _to_rows(current_table)
     row_idx = _row_index_from_event(evt)
     if not rows or row_idx is None or row_idx >= len(rows):
-        return gr.Group(visible=False), "", "", 100, 50, gr.Group(visible=False), []
+        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), []
 
     course_id = str(rows[row_idx][0])  # Spalte 0 = course_id (str(), falls Gradio/pandas daraus eine Zahl gemacht hat)
     book = get_gradebook()
     try:
         c = book.store.get_course(course_id)
     except CourseNotFoundError:
-        return gr.Group(visible=False), "", "", 100, 50, gr.Group(visible=False), []
+        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), []
 
     return (
         gr.Group(visible=True),
         c.course_id,
         c.name,
+        c.term,
         c.max_grade,
         c.passing_grade,
         gr.Group(visible=False),
@@ -458,12 +459,12 @@ def on_course_row_select(evt: gr.SelectData, current_table):
     )
 
 
-def save_course_handler(course_id, name, max_grade, passing_grade):
+def save_course_handler(course_id, name, term, max_grade, passing_grade):
     if not course_id:
         return "❌ No Course selected.", gr.Group(visible=True)
     book = get_gradebook()
     try:
-        update = Course(course_id, (name or "").strip(), float(max_grade), float(passing_grade))
+        update = Course(course_id, (name or "").strip(), (term or "").strip(), float(max_grade), float(passing_grade))
         book.update_course(update) # update course does the real check up
         gr.Info(f"✅ Course '{update.name}' was updated.")
         return gr.Group(visible=False)
@@ -644,10 +645,10 @@ def load_demo_data_handler():
 
     ]
     demo_courses = [
-        ("c1", "Category Theory", 100.0, 50.0),
-        ("c2", "Python 101", 100.0, 60.0),
-        ("c3", "QM 1", 100, 50),
-        ("c4", "Lagrangian Fun", 100, 50),
+        ("c1", "Category Theory", "Summer 26", 100.0, 50.0),
+        ("c2", "Python 101", "Summer 26", 100.0, 60.0),
+        ("c3", "QM 1", "Summer 26", 100, 50),
+        ("c4", "Lagrangian Fun", "Summer 26", 100, 50),
     ]
     demo_grades = [
         ("s1", "c1", 92, "2026-01-15"),
@@ -671,9 +672,9 @@ def load_demo_data_handler():
             book.add_student(Student(sid, fn, ln, email))
         except DuplicateEntryError:
             pass
-    for cid, name, max_g, pass_g in demo_courses:
+    for cid, name, term, max_g, pass_g in demo_courses:
         try:
-            book.add_course(Course(cid, name, max_g, pass_g))
+            book.add_course(Course(cid, name, term, max_g, pass_g))
         except DuplicateEntryError:
             pass
     for sid, cid, score, grade_date in demo_grades:
@@ -791,7 +792,7 @@ with gr.Blocks(
             with gr.Column(scale=2):
                 course_search = gr.Textbox(label="🔍 Search (Coursename)", placeholder="e.g. Mathematics")
                 courses_table = gr.Dataframe(
-                    headers=["ID", "Name", "Max. Score", "Passing Score", "Ø", "Passing Quota"],
+                    headers=["ID", "Name", "Term", "Max. Score", "Passing Score", "Ø", "Passing Quota"],
                     interactive=False,
                     max_height=320,
                 )
@@ -800,6 +801,7 @@ with gr.Blocks(
                 gr.Markdown("### Add new Course")
                 new_course_id = gr.Textbox(label="Kurs-ID")
                 new_course_name = gr.Textbox(label="Name")
+                new_course_term = gr.Textbox(label="Term", value="Summer 26")
                 new_max_grade = gr.Number(label="Max Score", value=100)
                 new_passing_grade = gr.Number(label="Passing grade", value=50)
                 add_course_btn = gr.Button("➕ Add", variant="primary")
@@ -809,6 +811,7 @@ with gr.Blocks(
             gr.Markdown("### ✏️ Edit Course")
             edit_course_id_display = gr.Textbox(label="ID (not editable)", interactive=False)
             edit_course_name = gr.Textbox(label="Name")
+            edit_course_term = gr.Textbox(label="Term")
             with gr.Row():
                 edit_course_max_grade = gr.Number(label="Max Score")
                 edit_course_passing_grade = gr.Number(label="Passing grade")
@@ -948,7 +951,7 @@ with gr.Blocks(
 
         # get student data to define visibility of 'load demo data' button
         book = get_gradebook()
-        visible = book.students["s1"] is None
+        visible = len(book.students) == 0
         demo_data_btn = gr.Button("🧪 Load Demo Data", visible=visible)
        
         #dash_summary = gr.Markdown()
@@ -1037,9 +1040,9 @@ with gr.Blocks(
     # ---- Courses ---- #
     add_course_btn.click(
         add_course_handler,
-        inputs=[new_course_id, new_course_name, new_max_grade, new_passing_grade],
+        inputs=[new_course_id, new_course_name, new_course_term, new_max_grade, new_passing_grade],
         outputs=[#add_course_status, 
-            new_course_id, new_course_name, new_max_grade, new_passing_grade],
+            new_course_id, new_course_name, new_course_term, new_max_grade, new_passing_grade],
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
 
     course_search.change(filter_courses_handler, inputs=[course_search], outputs=[courses_table])
@@ -1048,7 +1051,7 @@ with gr.Blocks(
         on_course_row_select,
         inputs=[courses_table],
         outputs=[
-            edit_course_panel, edit_course_id_display, edit_course_name,
+            edit_course_panel, edit_course_id_display, edit_course_name, edit_course_term,
             edit_course_max_grade, edit_course_passing_grade, delete_course_confirm,
             #enrolled_students_table,
         ],
@@ -1056,7 +1059,7 @@ with gr.Blocks(
 
     save_course_btn.click(
         save_course_handler,
-        inputs=[edit_course_id_display, edit_course_name, edit_course_max_grade, edit_course_passing_grade],
+        inputs=[edit_course_id_display, edit_course_name, edit_course_term, edit_course_max_grade, edit_course_passing_grade],
         outputs=[#edit_course_status, 
             edit_course_panel],
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)

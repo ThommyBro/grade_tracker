@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS students(
 CREATE TABLE IF NOT EXISTS courses(
     course_id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    term TEXT,
     max_grade REAL NOT NULL DEFAULT 100.0,
     passing_grade REAL NOT NULL DEFAULT 50.0
 );
@@ -146,9 +147,9 @@ class GradeDataBase:
             with self.conn:
                 try:
                     self.conn.execute(
-                        "INSERT INTO courses (course_id, name, max_grade, passing_grade) "
-                        "VALUES (?, ?, ?, ?)",
-                        (course.course_id, course.name, course.max_grade, course.passing_grade),
+                        "INSERT INTO courses (course_id, name, term, max_grade, passing_grade) "
+                        "VALUES (?, ?, ?, ?, ?)",
+                        (course.course_id, course.name, course.term, course.max_grade, course.passing_grade),
                     )
                     self.conn.commit()
                 except sqlite3.IntegrityError as exc:
@@ -172,7 +173,7 @@ class GradeDataBase:
 
     @staticmethod
     def _row_to_course(row: sqlite3.Row) -> Course:
-        return Course(row["course_id"], row["name"], row["max_grade"], row["passing_grade"])
+        return Course(row["course_id"], row["name"], row["term"],row["max_grade"], row["passing_grade"])
 
 
     
@@ -182,11 +183,12 @@ class GradeDataBase:
             with self.conn:
                 cursor = self.conn.execute("""UPDATE courses SET 
                         name = ? ,
+                        term = ? ,
                         max_grade = ? ,
                         passing_grade = ? 
                     WHERE course_id = ?
                     """,
-                    (course.name, course.max_grade, course.passing_grade, course.course_id),
+                    (course.name, course.term, course.max_grade, course.passing_grade, course.course_id),
                 )
                 if cursor.rowcount == 0:
                     raise CourseNotFoundError(course.course_id)

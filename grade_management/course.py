@@ -4,6 +4,7 @@ from dataclasses import dataclass
 class Course:
         course_id: str
         name: str
+        term: str 
         max_grade: float = 100.0
         passing_grade: float = 50.0
 
