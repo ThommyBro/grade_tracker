@@ -415,7 +415,7 @@ def add_course_handler(course_id, name, term, max_grade, passing_grade):
         )
         msg = f"✅ Course '{name}' ({course_id}) was added."
         gr.Info(msg)
-        return "", "", 100, 50
+        return "", "", "", 100, 50
     except (ValueError, DuplicateEntryError, TypeError) as exc:
         gr.Info(f"❌ Error: {exc}")
         return course_id, name, term, max_grade, passing_grade
