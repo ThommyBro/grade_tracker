@@ -707,7 +707,7 @@ def generate_report_handler(report_type, format_, student_id, course_id):
             filename = f"summary.{suffix}"
     except (StudentNotFoundError, CourseNotFoundError) as exc:
         gr.Info(f"❌ Error: {exc}",)
-        return None
+        return f"❌ Error: {exc}",None
 
     out_dir = Path(tempfile.gettempdir()) / "grade_tracker_reports"
     out_dir.mkdir(exist_ok=True)
@@ -940,7 +940,7 @@ with gr.Blocks(
             outputs=[dd_report_student, dd_report_course,],
         )
 
-        report_tab.select(fn=generate_report_handler )
+        #report_tab.select(fn=generate_report_handler )
 
 
     # --- Dashboard Tab --- #
