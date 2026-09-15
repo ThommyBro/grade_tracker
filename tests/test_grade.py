@@ -17,7 +17,8 @@ def test_grade_to_record():
 
     course = Course(
         course_id="C001",
-        name="Math"
+        name="Math",
+        term="Summer 26"
     )
 
     grade = Grade(
