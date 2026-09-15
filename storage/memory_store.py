@@ -3,7 +3,7 @@ import threading
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
-
+from grade_management.enrollment import Enrollment
 from storage.base import GradeStore
 #from grade_store.grade_store import GradeStore
 
@@ -20,10 +20,44 @@ class MemoryGradeStore(GradeStore):
         self._students: dict[str, Student] = {}
         self._courses: dict[str, Course] = {}
         self._grades: dict[str, Grade] = {}
+        self._enrollments: dict[tuple[str, str], Enrollment] = {}
         self._next_grade_id = 1
 
+
+    # ------------------------------------------------------------------ #
+    # Enrollments
+    # ------------------------------------------------------------------ #
+    def add_enrollment(self, student_id: str, course_id: str) -> Enrollment:
+        student = self.get_student(student_id)
+        course = self.get_course(course_id)
+
+        if self.is_enrolled(student_id, course_id):
+            raise DuplicateEntryError(f"Enrollment",f"{student_id} - {course_id}")
+
+        enrollment = Enrollment(student_id= student.student_id, course_id=course.course_id)
+
+        self._enrollments[student_id, course_id] = enrollment
+        return enrollment
+
+    def is_enrolled(self, student_id: str, course_id: str) -> bool:
+        return (student_id, course_id) in self._enrollments
+
+
+    def get_student_enrollments(self, student_id: str) -> list[Enrollment]:
+        self.get_student(student_id)
+        return [enrollment for enrollment in self._enrollments.values() if student_id == enrollment.student_id]
+
+
+    def get_course_enrollments(self, course_id: str) -> list[Enrollment]:
+        self.get_course(course_id)
+        return [ enrollment for enrollment in self._enrollments.values() if course_id == enrollment.course_id]
+
     
-     # ------------------------------------------------------------------ #
+
+
+
+    
+    # ------------------------------------------------------------------ #
     # Students
     # ------------------------------------------------------------------ #
     def add_student(self, student: Student) -> None:
@@ -60,6 +94,7 @@ class MemoryGradeStore(GradeStore):
     def delete_student(self, student_id: str) -> None:
         self.get_student(student_id)  # wirft StudentNotFoundError, falls unbekannt
 
+        # delete grades for this student
         ids_to_delete = [
             grade_id
             for grade_id, grade in self._grades.items()
@@ -68,6 +103,15 @@ class MemoryGradeStore(GradeStore):
         for grade_id in ids_to_delete:
             del self._grades[grade_id]
 
+        # delete enrollments for this student
+        keys_to_delete = [
+            key for key in self._enrollments 
+            if key[0] == student_id
+        ]
+        for key in keys_to_delete:
+            del self._enrollments[key]
+
+        # finally, delete this student
         del self._students[student_id]
 
     # ------------------------------------------------------------------ #
@@ -106,14 +150,24 @@ class MemoryGradeStore(GradeStore):
     def delete_course(self, course_id: str) -> None:
         self.get_course(course_id)  # wirft CourseNotFoundError, falls unbekannt
 
-        ids_to_delete = [
+        # delete grades for this course
+        grade_ids_to_delete = [
             grade_id
             for grade_id, grade in self._grades.items()
             if grade.course.course_id == course_id
         ]
-        for grade_id in ids_to_delete:
+        for grade_id in grade_ids_to_delete:
             del self._grades[grade_id]
 
+        # delete enrollments for this course
+        enrollment_keys_to_delete = [
+            key for key in self._enrollments 
+            if key[1] == course_id
+        ]
+        for key in enrollment_keys_to_delete:
+            del self._enrollments[key]
+
+        # finally, delete this course
         del self._courses[course_id]
 
     # ------------------------------------------------------------------ #
@@ -169,4 +223,14 @@ class MemoryGradeStore(GradeStore):
         if grade_id not in self._grades:
             raise GradeNotFoundError(grade_id)
         del self._grades[grade_id]
-                
+
+
+    # =============================================== #
+        #           Enrollments 
+        # =============================================== #
+        # to be implemeted
+        # add_enrollment(student_id, course_id)
+        # is_enrolled(student_id, course_id)
+    
+        # get_student_enrollments(student_id)
+        # get_course_enrollments(course_id)

@@ -3,7 +3,19 @@ from abc import ABC, abstractmethod
 from grade_management.student import Student
 from grade_management.course import Course
 from grade_management.grade import Grade
+from grade_management.enrollment import Enrollment
 #from grade_management.gradebook import GradeBook
+
+
+# =============================================== #
+    #           Enrollments 
+    # =============================================== #
+    # to be implemeted
+    # add_enrollment(student_id, course_id)     - x
+    # is_enrolled(student_id, course_id)
+
+    # get_student_enrollments(student_id)
+    # get_course_enrollments(course_id)
 
 class GradeStore(ABC):
     """
@@ -21,6 +33,10 @@ class GradeStore(ABC):
 
     @abstractmethod
     def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "") -> Grade:
+        ...
+
+    @abstractmethod
+    def add_enrollment(self, student_id: str, course_id: str) -> Enrollment:
         ...
 
 
@@ -60,6 +76,14 @@ class GradeStore(ABC):
     @abstractmethod
     def get_all_courses(self) -> list[Course]:
         ...
+
+    @abstractmethod
+    def get_student_enrollments(self, student_id: str) -> list[Enrollment]:
+        ...
+
+    @abstractmethod
+    def get_course_enrollments(self, course_id: str) -> list[Enrollment]:
+        ...
     
 
     # --- Updates --- #
@@ -90,6 +114,11 @@ class GradeStore(ABC):
         ...
 
 
+
+    # --- is --- #
+    @abstractmethod
+    def is_enrolled(self, student_id: str, course_id: str) -> bool:
+        ...
 
     # --- export --- #
     # @abstractmethod

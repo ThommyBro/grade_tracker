@@ -5,6 +5,7 @@ import threading
 from grade_management.course import Course
 from grade_management.student import Student
 from grade_management.grade import Grade
+from grade_management.enrollment import Enrollment
 from exceptions import (StudentNotFoundError, CourseNotFoundError, GradeNotFoundError, DuplicateEntryError )
 
 
@@ -33,6 +34,14 @@ CREATE TABLE IF NOT EXISTS grades(
     notes TEXT DEFAULT NULL,
 FOREIGN KEY (student_id) REFERENCES students(student_id),
 FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+CREATE TABLE IF NOT EXISTS enrollments(
+    student_id TEXT NOT NULL,
+    course_id TEXT NOT NULL,
+PRIMARY KEY (student_id, course_id),
+FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
 """
 
@@ -198,6 +207,12 @@ class GradeDataBase:
         """Deletes one Course from the database."""
         with self._lock:
             with self.conn:
+                self.get_course(course_id)
+
+                self.conn.execute(
+                    "DELETE FROM grades WHERE course_id = ?", (course_id,),
+                )
+                
                 cursor = self.conn.execute("DELETE FROM courses WHERE course_id = ?", (course_id,),)
                 if cursor.rowcount == 0:
                     raise CourseNotFoundError(course_id)
@@ -299,7 +314,68 @@ class GradeDataBase:
                     grade_id=str(row["id"]),
                 )
 
+    # =============================================== #
+    #           Enrollments
+    # =============================================== #
+
+    @staticmethod
+    def _row_to_enrollment(row: sqlite3.Row) -> Enrollment:
+        return Enrollment(row["student_id"], row["course_id"])
+
+    def add_enrollment(self, student_id: str, course_id: str) -> Enrollment:
+        with self._lock:
+            with self.conn:
+                student = self.get_student(student_id)
+                course = self.get_course(course_id)
+                enrollment = Enrollment(student_id=student.student_id, course_id=course.course_id)
+                try:
+                    self.conn.execute(
+                        "INSERT INTO enrollments (student_id, course_id) "
+                        "VALUES (?, ?)",
+                        (student_id, course_id)
+                    )
+                except sqlite3.IntegrityError as exc:
+                    raise DuplicateEntryError("Enrollment", f"{student_id} - {course_id}") from exc
+                
+                return enrollment
+          
+   
     
+    def get_student_enrollments(self, student_id: str) -> list[Enrollment]:
+        with self._lock:
+            with self.conn:
+                self.get_student(student_id)
+                rows = self.conn.execute(
+                    "SELECT * FROM enrollments WHERE student_id = ?", (student_id,),
+                ).fetchall()
+                return [self._row_to_enrollment(e) for e in rows]
+
+
+    def get_course_enrollments(self, course_id: str) -> list[Enrollment]:
+        with self._lock:
+            with self.conn:
+                self.get_course(course_id)
+                rows = self.conn.execute(
+                    "SELECT * FROM enrollments WHERE course_id = ?" , (course_id,),
+                ).fetchall()
+                return [self._row_to_enrollment(e) for e in rows]
+
+
+    def is_enrolled(self, student_id: str, course_id: str) -> bool:
+        with self._lock:
+            with self.conn:
+                row = self.conn.execute(
+                    """
+                    SELECT 1
+                    FROM enrollments
+                    WHERE student_id = ? AND course_id = ?
+                    """,
+                    (student_id, course_id),
+                ).fetchone()
+
+                return row is not None
+            
+
     # =============================================== #
     #           SQL-statistics 
     # =============================================== #
@@ -342,4 +418,12 @@ class GradeDataBase:
 
 
 
+    # =============================================== #
+    #           Enrollments 
+    # =============================================== #
+    # to be implemeted
+    # add_enrollment(student_id, course_id)
+    # is_enrolled(student_id, course_id)
 
+    # get_student_enrollments(student_id)
+    # get_course_enrollments(course_id)
