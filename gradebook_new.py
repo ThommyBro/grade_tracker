@@ -23,6 +23,7 @@ import re
 from grade_management.course import Course
 from grade_management.grade import Grade
 from grade_management.student import Student
+from grade_management.enrollment import Enrollment
 from storage.base import GradeStore
 from storage.memory_store import MemoryGradeStore
 
@@ -60,6 +61,11 @@ class GradeBook:
     def add_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str = "",) -> Grade:
         return self.store.add_grade(student_id, course_id, score, date, notes)
 
+    def add_enrollment(self, student_id: str, course_id: str) -> Enrollment:
+        return self.store.add_enrollment(student_id, course_id)
+
+    
+
     def get_student(self, student_id: str) -> Student:
         return self.store.get_student(student_id)
 
@@ -74,6 +80,12 @@ class GradeBook:
 
     def get_grade(self, grade_id: str) -> Grade:
         return self.store.get_grade(grade_id)
+
+    def get_student_enrollments(self, student_id: str) -> list[Enrollment]:
+        return self.store.get_student_enrollments(student_id)
+
+    def get_course_enrollments(self, course_id: str) -> list[Enrollment]:
+        return self.store.get_course_enrollments(course_id)
 
    
     def update_student(self, student: Student) -> None:
