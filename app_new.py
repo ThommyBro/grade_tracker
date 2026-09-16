@@ -51,7 +51,162 @@ LETTERS = ("A", "B", "C", "D", "F")
 
 
 
+CUSTOM_CSS = """
+/* =========================================================
+   Grade Tracker – custom theme
+   ========================================================= */
+:root {
+    --bg: #f4f7fa;
+    --surface: #ffffff;
 
+    --blue-900: #1f3a4d;
+    --blue-700: #2f5f73;
+    --blue-600: #3b718f;
+    --blue-500: #4f87a0;
+    --blue-300: #a9c5d2;
+    --blue-100: #eaf2f6;
+
+    --muted: #6b7f8c;
+
+    --danger-bg: #e9eef2;
+    --danger-border: #7f96a3;
+    --danger-text: #2c3e4a;
+}
+/* ---------- Selected dataframe cell / row ---------- */
+
+table tbody tr:hover {
+    background: #edf4f7 !important;
+}
+
+table td.selected,
+table td:focus,
+table td:focus-visible {
+    background: #dceaf0 !important;
+    border-color: #3b718f !important;
+    outline-color: #3b718f !important;
+}
+
+.gradio-container {
+    --color-accent: #3b718f !important;
+    --color-accent-soft: #dceaf0 !important;
+}
+button[role="tab"][aria-selected="true"] {
+    color: #285d73;
+    border-bottom: 3px solid #3b718f;
+}
+.gradio-container {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    background: #f5f7fa;
+}
+
+
+/* ---------- Cards / Groups ---------- */
+
+.app-card {
+    background: white;
+    border: 1px solid #d9e2ec;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ---------- Edit / Detail panels ---------- */
+/* ---------- Enrollment ---------- */
+
+.slide-panel {
+    background: transparent;
+    border: none;
+    
+    padding: 10px 0 10px 16px;
+    margin-top: 18px;
+}
+.enrollment-panel {
+    background: transparent;
+    border: none;
+    
+    padding: 10px 0 10px 16px;
+    margin-top: 18px;
+}
+
+
+/* ---------- Delete confirmation ---------- */
+
+.confirm-panel {
+    background: #fff4f2;
+    border: 1px solid #e3b6ae;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 10px;
+}
+
+
+/* ---------- Small hint text ---------- */
+
+.hint-text {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+
+/* ---------- Section headings ---------- */
+
+.section-title h3,
+.section-title h4 {
+    color: #294c60;
+}
+
+
+/* ---------- Tables ---------- */
+
+.data-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+/* ---------- Tabs ---------- */
+
+button[role="tab"] {
+    font-weight: 600;
+}
+
+button[role="tab"][aria-selected="true"] {
+    color: #285d73;
+    border-bottom: 3px solid #3b718f;
+}
+
+
+/* ---------- Primary buttons ---------- */
+
+button.primary {
+    background: var(--blue-600) !important;
+    color: white !important;
+    border: 1px solid var(--blue-600) !important;
+}
+
+button.primary:hover {
+    background: var(--blue-700) !important;
+}
+
+button.stop {
+    background: var(--danger-bg) !important;
+    color: var(--danger-text) !important;
+    border: 1px solid var(--danger-border) !important;
+}
+
+button.stop:hover {
+    background: #dce4e9 !important;
+}
+
+/* ---------- Inputs ---------- */
+
+input,
+textarea {
+    border-radius: 8px !important;
+}
+"""
 
 # ======================================================================== #
 #       Header
@@ -140,17 +295,38 @@ def _grades_table_data(book: GradeBook,
     ]
 
 
-# def _enrolled_students_table(book: GradeBook, course_id: str) -> list[list]:
-#     """Studierende, die in einem Kurs mindestens eine Note haben ("eingeschrieben")."""
-#     try:
-#         grades = book.get_course_grades(course_id)
-#     except CourseNotFoundError:
-#         return []
-#     rows = sorted(grades, key=lambda g: g.student.full_name)
-#     return [
-#         [g.student.full_name, g.score, g.letter_grade, "bestanden" if g.is_passing else "nicht bestanden"]
-#         for g in rows
-#     ]
+def _student_enrollments_table(book: GradeBook, student_id: str) -> list[list]:
+    enrollments = book.get_student_enrollments(student_id)
+
+    rows = []
+
+    for enrollment in enrollments:
+        course = book.store.get_course(enrollment.course_id)
+
+        rows.append([
+            course.course_id,
+            course.name,
+            course.term,
+        ])
+
+    return rows
+
+
+def _course_enrollments_table(book: GradeBook, course_id: str) -> list[list]:
+    enrollments = book.get_course_enrollments(course_id)
+
+    rows = []
+
+    for enrollment in enrollments:
+        student = book.get_student(enrollment.student_id)
+
+        rows.append([
+            student.student_id,
+            student.first_name,
+            student.last_name,
+        ])
+
+    return rows
 
 
 def _top_students_table(book: GradeBook) -> list[list]:
@@ -318,14 +494,15 @@ def on_student_row_select(evt: gr.SelectData, current_table):
     rows = _to_rows(current_table)
     row_idx = _row_index_from_event(evt)
     if not rows or row_idx is None or row_idx >= len(rows):
-        return gr.Group(visible=False), "", "", "", "", gr.Group(visible=False)
+        return gr.Group(visible=False), "", "", "", "", gr.Group(visible=False),gr.Group(visible=True),[]
 
     student_id = str(rows[row_idx][0])  
     book = get_gradebook()
     try:
         s = book.store.get_student(student_id)
+        student_courses = _student_enrollments_table(book, student_id)
     except StudentNotFoundError:
-        return gr.Group(visible=False), "", "", "", "", gr.Group(visible=False)
+        return gr.Group(visible=False), "", "", "", "", gr.Group(visible=False),gr.Group(visible=True), gr.Group(visible=True),[]
 
     return (
         gr.Group(visible=True),   # check: Panel "einfliegen" lassen
@@ -333,7 +510,10 @@ def on_student_row_select(evt: gr.SelectData, current_table):
         s.first_name,
         s.last_name,
         s.email,
-        gr.Group(visible=False),  
+        gr.Group(visible=False),    # Delete confirmation
+        gr.Group(visible=True),     # enroll_student_panel
+        gr.Group(visible=True),     # enrolled_student_panel
+        student_courses
     )
 
 
@@ -394,7 +574,38 @@ def cancel_delete_student_handler():
 
 
 def close_student_panel_handler():
-    return gr.Group(visible=False), gr.Group(visible=False)
+    return (gr.Group(visible=False), # edit_student_panel
+            gr.Group(visible=False), # delete_student_confirm
+            gr.Group(visible=False), # enroll_student_panel
+            gr.Group(visible=False), # enrolled_student_panel
+    )
+
+def enroll_student_handler(student_id, course_id):
+    if not student_id or not course_id:
+        gr.Info("❌ Select a student and a course.")
+        return []
+
+    book = get_gradebook()
+
+    try:
+        book.add_enrollment(student_id, course_id)
+
+        student = book.get_student(student_id)
+        course = book.get_course(course_id)
+
+        gr.Info(
+            f"✅ {student.full_name} enrolled in "
+            f"{course.name} ({course.term})."
+        )
+
+    except (
+        DuplicateEntryError,
+        StudentNotFoundError,
+        CourseNotFoundError,
+    ) as exc:
+        gr.Info(f"❌ Error: {exc}")
+
+    return _student_enrollments_table(book, student_id)
 
 
 def view_student_report_handler(student_id):
@@ -435,18 +646,19 @@ def filter_courses_handler(query):
 
 
 def on_course_row_select(evt: gr.SelectData, current_table):
+    book = get_gradebook()
     rows = _to_rows(current_table)
     row_idx = _row_index_from_event(evt)
+    
+
     if not rows or row_idx is None or row_idx >= len(rows):
-        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), []
+        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), [],
 
     course_id = str(rows[row_idx][0])  # Spalte 0 = course_id (str(), falls Gradio/pandas daraus eine Zahl gemacht hat)
-    book = get_gradebook()
     try:
         c = book.store.get_course(course_id)
     except CourseNotFoundError:
-        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), []
-
+        return gr.Group(visible=False), "", "", "", 100, 50, gr.Group(visible=False), [],
     return (
         gr.Group(visible=True),
         c.course_id,
@@ -456,6 +668,7 @@ def on_course_row_select(evt: gr.SelectData, current_table):
         c.passing_grade,
         gr.Group(visible=False),
         #_enrolled_students_table(book, course_id),
+        _course_enrollments_table(book, course_id),
     )
 
 
@@ -725,7 +938,7 @@ with gr.Blocks(
     #theme=gr.Theme.from_hub("KevinGeng/Laronix"),
     #theme=gr.Theme.from_hub("Maani/MonoNeo"),
     #theme=gr.themes.Ocean()
-    #css=CUSTOM_CSS,
+    css=CUSTOM_CSS,
 ) as demo:
     #gr.Markdown("# 📚 Grade Tracker", elem_classes=["app-title"])
     #gr.Markdown("Dashboard for students, courses and grades.")
@@ -734,17 +947,26 @@ with gr.Blocks(
 
 # --- Students Tab --- #
     with gr.Tab("👥 Students"):
+        book = get_gradebook()
+        course_choices = [
+                        (f"{c.name} ({c.course_id}) - {c.term}", 
+                         c.course_id)
+                        for c in book.store.get_all_courses()
+                        ]
         with gr.Row():
             with gr.Column(scale=2):
+                # Search Box
                 student_search = gr.Textbox(
                     label="🔍 Search (Name or E-Mail)", placeholder="e.g. Anna or @uni.com"
                 )
+                # Table 
                 students_table = gr.Dataframe(
                     headers=["ID", "Firstname", "Lastname", "E-Mail", "Ø (%)"],
                     interactive=False,
                     max_height=320
                 )
                 gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
+            # Add new student
             with gr.Column(scale=1):
                 gr.Markdown("### Add new student")
                 new_student_id = gr.Textbox(label="Studend-ID")
@@ -753,7 +975,9 @@ with gr.Blocks(
                 new_email = gr.Textbox(label="E-Mail")
                 add_student_btn = gr.Button("➕ Add", variant="primary")
 
-
+        # ------------------------
+        # Edit Panel
+        # ------------------------
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_student_panel:
             gr.Markdown("### ✏️ Edit Student")
             edit_student_id_display = gr.Textbox(label="ID (not editable)", interactive=False)
@@ -761,11 +985,12 @@ with gr.Blocks(
                 edit_student_first_name = gr.Textbox(label="Firstname")
                 edit_student_last_name = gr.Textbox(label="Lastname")
             edit_student_email = gr.Textbox(label="E-Mail")
+
+            # Buttons
             with gr.Row():
                 save_student_btn = gr.Button("💾 Save", variant="primary")
                 delete_student_btn = gr.Button("🗑️ Delete", variant="stop")
                 close_student_panel_btn = gr.Button("✖ Close")
-            
 
             with gr.Group(visible=False, elem_classes=["confirm-panel"]) as delete_student_confirm:
                 delete_student_warning = gr.Markdown()
@@ -774,6 +999,24 @@ with gr.Blocks(
                     cancel_delete_student_btn = gr.Button("Cancel")
 
 
+        # --------------------------
+        # Enrollment panel
+        # --------------------------
+        with gr.Group(visible=False, elem_classes=["slide-panel"]) as enroll_student_panel:  
+            gr.Markdown("### 📚 Course Enrollment")  
+            with gr.Row():
+                with gr.Column(scale=1):
+                    dd_student_enrollment_course = gr.Dropdown(label="Course",choices=course_choices)
+                    enroll_student_btn = gr.Button("➕ Enroll",variant="primary")
+        with gr.Group(visible=True, elem_classes=["slide-panel"]) as enrolled_student_panel:
+            with gr.Row():
+                with gr.Column(scale=2):
+                    student_enrollments_table = gr.Dataframe(headers=["Course ID", "Course", "Term"],interactive=False,)
+            
+
+        # --------------------------
+        # Report
+        # --------------------------
         gr.Markdown("### Individual Report")
         with gr.Row():
             with gr.Column(scale=1):
@@ -791,12 +1034,18 @@ with gr.Blocks(
         with gr.Row():
             with gr.Column(scale=2):
                 course_search = gr.Textbox(label="🔍 Search (Coursename)", placeholder="e.g. Mathematics")
+                # --------------------------
+                # Table
+                # --------------------------
                 courses_table = gr.Dataframe(
                     headers=["ID", "Name", "Term", "Max. Score", "Passing Score", "Ø", "Passing Quota"],
                     interactive=False,
                     max_height=320,
                 )
                 gr.Markdown("💡 Click a row to edit.", elem_classes=["hint-text"])
+            # --------------------------
+            # Add Course
+            # --------------------------
             with gr.Column(scale=1):
                 gr.Markdown("### Add new Course")
                 new_course_id = gr.Textbox(label="Kurs-ID")
@@ -806,7 +1055,9 @@ with gr.Blocks(
                 new_passing_grade = gr.Number(label="Passing grade", value=50)
                 add_course_btn = gr.Button("➕ Add", variant="primary")
                 
-
+        # --------------------------
+        # Edit Course
+        # --------------------------
         with gr.Group(visible=False, elem_classes=["slide-panel"]) as edit_course_panel:
             gr.Markdown("### ✏️ Edit Course")
             edit_course_id_display = gr.Textbox(label="ID (not editable)", interactive=False)
@@ -821,18 +1072,27 @@ with gr.Blocks(
                 close_course_panel_btn = gr.Button("✖ Close")
             #edit_course_status = gr.Textbox(label="Status", interactive=False)
 
+            # --------------------------
+            # Buttons
+            # --------------------------
             with gr.Group(visible=False, elem_classes=["confirm-panel"]) as delete_course_confirm:
                 delete_course_warning = gr.Markdown()
                 with gr.Row():
                     confirm_delete_course_btn = gr.Button("✅ Yes, delete permanently", variant="stop")
                     cancel_delete_course_btn = gr.Button("Cancel")
 
-            
-            # gr.Markdown("#### 👥 Enrolled Students")
-            # enrolled_students_table = gr.Dataframe(
-            #     headers=["Students", "Score", "Grade", "Status"], interactive=False
-            # )
+        # --------------------------
+        # Enrolled Studends
+        # --------------------------
+        gr.Markdown("#### 👥 Enrolled Students")
+        with gr.Row():
+            with gr.Column(scale=2):
+                enrolled_course_table = gr.Dataframe(headers=["Student ID", "Firstname", "Lastname"],interactive=False,)
 
+
+        # --------------------------
+        # Reports
+        # --------------------------
         gr.Markdown("### Course Statistics (Text Report)")
         with gr.Row():
             with gr.Column(scale=1):
@@ -977,7 +1237,9 @@ with gr.Blocks(
         grades_table,
         #dash_summary, 
         dash_top_table, dash_risk_table, 
-        dash_chart, dash_course_chart
+        dash_chart, dash_course_chart,
+        #student_enrollments_table,
+        
     ]
 
 
@@ -997,6 +1259,7 @@ with gr.Blocks(
         outputs=[
             edit_student_panel, edit_student_id_display, edit_student_first_name,
             edit_student_last_name, edit_student_email, delete_student_confirm,
+            enroll_student_panel,  enrolled_student_panel, student_enrollments_table
         ],
     )
 
@@ -1009,6 +1272,7 @@ with gr.Blocks(
         outputs=[
             edit_student_panel, edit_student_id_display, edit_student_first_name,
             edit_student_last_name, edit_student_email, delete_student_confirm,
+            enroll_student_panel,  enrolled_student_panel, student_enrollments_table
         ],
     )
 
@@ -1033,9 +1297,18 @@ with gr.Blocks(
     ).then(full_refresh, outputs=ALL_REFRESH_OUTPUTS)
 
     cancel_delete_student_btn.click(cancel_delete_student_handler, outputs=[delete_student_confirm])
-    close_student_panel_btn.click(close_student_panel_handler, outputs=[edit_student_panel, delete_student_confirm])
+    close_student_panel_btn.click(close_student_panel_handler, outputs=[edit_student_panel, delete_student_confirm, enroll_student_panel])
 
     view_student_btn.click(view_student_report_handler, inputs=[dd_view_student], outputs=[student_report_box])
+
+    enroll_student_btn.click(
+    enroll_student_handler,
+    inputs=[
+        edit_student_id_display,
+        dd_student_enrollment_course,
+        ],
+    outputs=[student_enrollments_table,],
+    )
 
     # ---- Courses ---- #
     add_course_btn.click(
@@ -1053,7 +1326,7 @@ with gr.Blocks(
         outputs=[
             edit_course_panel, edit_course_id_display, edit_course_name, edit_course_term,
             edit_course_max_grade, edit_course_passing_grade, delete_course_confirm,
-            #enrolled_students_table,
+            enrolled_course_table,
         ],
     )
 
@@ -1149,5 +1422,5 @@ with gr.Blocks(
 
 if __name__ == "__main__":
     #demo.launch()
-    demo.launch(server_name="127.0.0.1", server_port=7860, theme=gr.themes.Ocean(), )
+    demo.launch(server_name="127.0.0.1", server_port=7860, )
 
